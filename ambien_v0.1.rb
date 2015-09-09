@@ -54,7 +54,7 @@ live_loop :choiron do
   end
 end
 
-live_loop :x do
+live_loop :bass do
 
   use_synth :sine
   n = (knit :c2, 3, :ds2, 1, :f2, 1, :c2, 1)
@@ -73,5 +73,4 @@ end
 live_loop :perc do
     sample :bd_pure, rate: 0.85
     sleep [1, 0.5, 1.5, 0.5, 0.5].ring.tick
-    #sleep [1, 0.5, 1.5, 0.5, 1.5, 2].ring.tick
   end
