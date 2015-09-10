@@ -1,5 +1,7 @@
-## Tuned Ring Mod & Resonator in C minor
+## Codewave_0.1 -Tuned Ring Mods & Resonators in C minor
 ## Coded by Nanomancer
+## Copyright James A. Smith
+##
 
 set_volume! 3
 set_sched_ahead_time! 6
@@ -8,7 +10,7 @@ notes = chord(:c1, :minor, num_octaves: 2).shuffle
 #notes = scale(:c1, :hungarian_minor)
 puts notes
 
-live_loop :ambi do
+live_loop :res_pulse do
 
   #cue :none
   with_fx :reverb, mix: 0.5, room: 0.7 do
@@ -29,7 +31,7 @@ live_loop :ambi do
   end
 end
 
-live_loop :choiron do
+live_loop :choir do
 
   #sync :none
   tick_set 2
@@ -41,7 +43,7 @@ live_loop :choiron do
       with_fx :slicer, mix: 0.5, phase: [0.25, 0.5, 0.75].choose do
 
         2.times do
-          sample :ambi_choir, pan: 0.5, amp: 0.2, rate: (ring -1, 0.5, -2, -0.5, 1).tick(:ambi)
+          sample :ambi_choir, pan: 0.5, amp: 0.18, rate: (ring -1, 0.5, -2, -0.5, 1).tick(:ambi)
           sleep 6
         end
         sleep 6
@@ -51,7 +53,7 @@ live_loop :choiron do
   end
 end
 
-live_loop :lunar do
+live_loop :lunar_sweep do
 
   #sync :none
   tick_set 3
@@ -82,19 +84,13 @@ live_loop :sine_bass do
   sleep 4
 end
 
-live_loop :blader do
+live_loop :runner do
 
   use_synth :blade
   with_fx :echo, phase: 2, decay: 4 do
     play 48 + notes.tick, amp: 0.04, attack: 2, sustain: 1, release: 3, cutoff: 85
     sleep [6, 10, 12, 6, 14, 6].ring.look
   end
-end
-
-live_loop :ticker do
-  sample :elec_tick, amp: 0.09, cutoff: 75, res: 0.1
-  #  sleep 0.5
-  sleep (knit 0.5, 2, 0.25, 2, 0.5, 2, 0.25, 1, 0.125, 2, 0.5, 2).ring.tick
 end
 
 live_loop :kick do
@@ -104,4 +100,16 @@ live_loop :kick do
     #sleep 2
     sleep [1, 0.5, 1.5, 0.5, 0.5].ring.tick
   end
+  #stop
+end
+
+live_loop :pale_rider do
+  sample :drum_cymbal_soft, rate: 0.8, amp: 0.04
+  sleep (knit 4, 2, 8, 2, 2, 2, 16, 2).tick
+end
+
+live_loop :brush do
+  sample :elec_cymbal, rate: 4, amp: 0.075, attack: 0.0275, cutoff: 85, res: 0.1
+  #sleep 0.5
+  sleep (knit 0.5, 2, 0.25, 2, 0.5, 2, 0.25, 1, 0.125, 2, 0.5, 2).ring.tick
 end
