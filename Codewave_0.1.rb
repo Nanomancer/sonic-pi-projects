@@ -66,10 +66,10 @@ live_loop :lunar_sweep do
 
   #sync :none
   with_fx :reverb, mix: 0.5, room: 0.7 do
-    with_fx :bitcrusher, bits: 12 do
-      with_fx :slicer, mix: 0.75, phase: (ring 0.5, 0.25, 0.75, 1).tick(:ambi) do
+    with_fx :bitcrusher, bits: (ring 8, 10, 12).choose do
 
-        2.times do
+      2.times do
+        with_fx :slicer, mix: 0.75, phase: (ring 0.5, 0.25, 0.75, 1).tick(:ambi) do
           sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.08, rate: (ring -1, -2, -0.5).look(:ambi)
           sleep [8, 4, 16].ring.look(:ambi)
           sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.08, rate: (ring 1, 2, 0.5).look(:ambi)
