@@ -87,9 +87,12 @@ end
 live_loop :runner do
 
   use_synth :blade
-  with_fx :echo, phase: 2, decay: 4 do
-    play 48 + notes.tick, amp: 0.04, attack: 2, sustain: 1, release: 3, cutoff: 85
-    sleep [6, 10, 12, 6, 14, 6].ring.look
+  nts = chord(:c1, :minor, num_octaves: 3).shuffle
+  4.times do
+    with_fx :echo, phase: 2, decay: 4 do
+      play 36 + nts.tick, amp: 0.04, attack: 2, sustain: 1, release: 3, cutoff: 85
+      sleep [6, 10, 12, 6, 14, 6].ring.look
+    end
   end
 end
 
