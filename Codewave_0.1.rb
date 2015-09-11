@@ -16,14 +16,14 @@ use_cue_logging true
 
 ##############  FX  #########################
 
-live_loop :resonatrix do
-
+live_loop :res_hum do
   #cue :fx
-  #cue :drums
-  #cue :synths
-
+  #cue :drum
+  #cue :syn
   notes = chord([:c1, :c2].choose, :minor, num_octaves: 2).shuffle
+  
   #2.times do
+  
   with_fx :reverb, mix: [0.5, 0.6, 0.7, 0.8].choose, room: [0.6, 0.7, 0.8].choose do
     with_fx :lpf, cutoff: [80, 90, 100, 110].choose do
       2.times do
@@ -54,6 +54,7 @@ live_loop :choir do
 
   syncer(:fx)
   notes = chord(:c1, :minor, num_octaves: 2).shuffle
+  
   4.times do
     frq = midi_to_hz(notes.tick)
     del = (1.0 / frq)# * 2
@@ -99,25 +100,26 @@ end
 
 live_loop :kick do
 
-  syncer(:drums)
+  syncer(:drum)
   #cue :synth
 
   slp = (knit 4,4)
   #slp = (ring 1, 0.5, 1.5, 0.5, 0.5)
+  
   8.times do
     slp.size.times do
       sample :bd_pure, rate: 0.85 * rdist(0.008, 1), amp: 0.8
       sleep slp.tick
     end
-    #stop
   end
 end
 
 
 comment do
   live_loop :brush do
-    syncer(:drums)
-    slp = (knit 1,8)
+  
+    syncer(:drum)
+    slp = (knit 1,16)
     #slp = (knit 0.5, 2, 0.25, 2, 0.5, 2, 0.25, 1, 0.125, 2, 0.5, 2)
 
     slp.size.times do
@@ -129,10 +131,8 @@ end
 
 comment do
   live_loop :pale_rider do
-    syncer(:drums)
-    #sync :n
-    #sync :drums
-
+  
+    syncer(:drum)
     10.times do
       sample :drum_cymbal_soft, rate: [0.8, 0.65].choose * rdist(0.008, 1), amp: 0.04, pan: 0.25
       sleep (knit 16, 2, 4, 4, 8, 2, 2, 2, ).tick
@@ -143,8 +143,8 @@ end
 ##############  SYNTHS  #########################
 
 live_loop :sine_bass do
-  syncer(:synths)
-  #sync :fx
+
+  syncer(:syn)
   use_synth :sine
   #notes = (knit :c2, 3, :ds2, 1)
   notes = (knit :c2, 4, :ds2, 1, :f2, 1)
@@ -152,13 +152,11 @@ live_loop :sine_bass do
     play notes.tick, amp: 0.2, decay: 0.75, sustain_level: 0.5, sustain: 0.75, release: 1#, cutoff: 80
     sleep 4
   end
-  #stop
 end
 
 comment do
   live_loop :runner do
-    syncer(:synths)
-    #sync :n
+    syncer(:syn)
     use_synth :blade
     notes = chord(:c3, :minor, num_octaves: 3).shuffle
     6.times do
