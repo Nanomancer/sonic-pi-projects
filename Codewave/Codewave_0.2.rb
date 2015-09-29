@@ -1,29 +1,55 @@
 ## Codewave_0.1 -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
-ndefine :autosync do |id|
-  if look == 0
-    return sync id
+define :autosync do |id, num = 0|
+  return sync id if tick(:as) == num
+end
+
+
+define :mk_rand_scale do |scale, len = 8|
+  rand_s = []
+  len.times do
+    rand_s << scale.choose
   end
+  return rand_s.ring
 end
 
 #######################
 
-set_volume! 5
+set_volume! 4
 set_sched_ahead_time! 3
 use_cue_logging true
 
 ##############  FX  #########################
 
+live_loop :pulsar do
+  cue :hum
+  cue :drn
+  cue :fx
+  cue :run
+
+
+  use_synth :growl
+  cut = [70, 75, 80, 85, 90, 85, 80, 75].ring.tick(:cut)
+  notes = (knit :c3, 2, :ds3, 1, :c3, 1)
+  #notes = (knit :c3, 3, :ds3, 1, :c3, 1, :b2, 1)
+
+  #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
+  with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
+    notes.size.times do
+      play notes.tick, amp: 0.02, attack: 1, sustain: 1, release: 2, cutoff: cut
+      sleep 8
+    end
+  end
+end
+
 live_loop :res_hum do
 
-  cue :fx
-  #cue :syn
-  #sync :none
+  autosync(:hum)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
   notes = scale(:c1, :hungarian_minor, num_octaves: 2).shuffle
 
-  vol = 0.3
+  vol = 0.4
 
   #2.times do
   notes.size.times do
@@ -47,7 +73,7 @@ live_loop :res_hum do
             end
             sleep [16, 8, 16].ring.look(:ambi)
           end
-          sleep 6
+          sleep [4, 6, 8, 12, 16].choose
         end
       end
     end
@@ -55,49 +81,41 @@ live_loop :res_hum do
   #stop
 end
 
-live_loop :pulsar do
-  cue :syn
-  use_synth :growl
-  cut = [70, 75, 80, 85, 90, 85, 80, 75].ring.tick(:cut)
-  notes = (knit :c3, 2, :ds3, 1)
-  #notes = (knit :c3, 3, :ds3, 1, :c3, 1, :b2, 1)
-
-  #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
-  with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
-    notes.size.times do
-      play notes.tick, amp: 0.025, attack: 1, sustain: 1, release: 2, cutoff: cut
-      sleep 8
-    end
-  end
-end
-
 live_loop :runner do
-  autosync(:syn)
+  autosync(:run)
   use_synth :blade
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
-  notes = scale(:c4, :hungarian_minor, num_octaves: 3).shuffle
-  slp = [6, 10, 6, 8, 12, 6, 6, 8, 6, 18, 6, 8, 6, 14, 6, 8, 6, 32]
-  slp.size.times do
+
+  scl = scale(:c5, :hungarian_minor, num_octaves: 1)
+  notes = mk_rand_scale(scl)
+  #slp = [6, 10, 6, 8, 12, 6, 6, 8, 6, 18, 6, 8, 6, 14, 6, 8, 6, 32].ring
+  #slp = [6, 4, 6, 6, 2, 4, 2, 2, 8, 12, 8, 8, 16, 24, 16, 16].ring #6, 2, 8, 10, 6, 4, 4, 4, 8, 4, 8, 6, 8, 16].ring
+  #slp = [6, 4, 6, 6, 2, 4, 2, 2, 8, 12, 8, 8, 16, 24, 16, 16].ring
+  slp = [3,3,2,3,3,2,4,8].ring
+  slp.size * 4.times do
+    att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
     phase = [0.25, 0.5, 0.75, 1].choose
     with_fx :reverb do
       with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
         with_fx :ring_mod, freq: rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd)) do
-          with_fx :echo, phase: 2, decay: 4 do
+          with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
             #play notes.tick, amp: 0.025, attack: 2, sustain: 1, release: 3, cutoff: 85
-            play notes.tick, amp: 0.025, attack: 2, sustain: 1, release: 3, cutoff: 85
-
-            sleep slp.ring.look
+            #play notes.tick, amp: 0.018, attack: 2, sustain: 1, release: 3, cutoff: 85
+            play notes.look, amp: 0.018, attack: att, sustain: sus, release: rel, cutoff: 85
+            puts "Runner sleep: #{slp.look}"
+            sleep slp.look# * [1, 2, 4].choose
           end
         end
       end
     end
     #stop
   end
+  sleep [2, 4, 6, 8, 10, 12, 14, 16, 24, 32].choose
 end
 
 live_loop :drone do
   #tick reset(:as)
-  autosync(:fx)
+  autosync(:drn)
   #notes = chord(:c1, :minor, num_octaves: 2).shuffle
   #notes = scale(:c1, :hungarian_minor, num_octaves: 1).shuffle
   notes = (ring 26, 27, 31, 32, 24, 35, 36, 30)
