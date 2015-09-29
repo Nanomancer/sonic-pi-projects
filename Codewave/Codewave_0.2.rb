@@ -1,4 +1,4 @@
-## Codewave_0.1 -Tuned Resonators in C minor
+## Codewave_0.2 -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
 define :autosync do |id, num = 0|
@@ -15,8 +15,8 @@ define :mk_rand_scale do |scale, len = 8|
 end
 
 #######################
-
-set_volume! 4
+use_bpm 60
+set_volume! 3
 set_sched_ahead_time! 3
 use_cue_logging true
 
@@ -37,7 +37,7 @@ live_loop :pulsar do
   #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     notes.size.times do
-      play notes.tick, amp: 0.02, attack: 1, sustain: 1, release: 2, cutoff: cut
+      play notes.tick, amp: 0.04, attack: 1, sustain: 1, release: 2, cutoff: cut
       sleep 8
     end
   end
@@ -95,19 +95,19 @@ live_loop :runner do
   slp.size * 4.times do
     att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
     phase = [0.25, 0.5, 0.75, 1].choose
-    with_fx :reverb do
-      with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-        with_fx :ring_mod, freq: rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd)) do
-          with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
-            #play notes.tick, amp: 0.025, attack: 2, sustain: 1, release: 3, cutoff: 85
-            #play notes.tick, amp: 0.018, attack: 2, sustain: 1, release: 3, cutoff: 85
-            play notes.look, amp: 0.018, attack: att, sustain: sus, release: rel, cutoff: 85
-            puts "Runner sleep: #{slp.look}"
-            sleep slp.look# * [1, 2, 4].choose
-          end
+    # with_fx :reverb do
+    with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
+      with_fx :ring_mod, freq: rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd)) do
+        with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
+          #play notes.tick, amp: 0.025, attack: 2, sustain: 1, release: 3, cutoff: 85
+          #play notes.tick, amp: 0.018, attack: 2, sustain: 1, release: 3, cutoff: 85
+          play notes.look, amp: 0.01, attack: att, sustain: sus, release: rel, cutoff: 85
+          puts "Runner sleep: #{slp.look}"
+          sleep slp.look# * [1, 2, 4].choose
         end
       end
     end
+    # end
     #stop
   end
   sleep [2, 4, 6, 8, 10, 12, 14, 16, 24, 32].choose
@@ -124,7 +124,7 @@ live_loop :drone do
     frq = midi_to_hz(notes.tick)
     del = (1.0 / frq)# * 2
     #with_fx :reverb, mix: 0.5, room: 0.7 do
-    with_fx :echo, amp: 0.125, mix: 0.5, phase: del, decay: 2 do
+    with_fx :echo, amp: 0.2, mix: 0.5, phase: del, decay: 2 do
       #with_fx :ring_mod, freq: frq do
       #with_fx :slicer, mix: 0.35, phase: [0.25, 0.5, 0.75].choose do
       sample :ambi_drone, attack: 0.5, pan: [1, 0, -1].choose, amp: 0.2, rate: 0.5 # (ring 0.25, 0.5).tick(:ambi)
@@ -142,7 +142,7 @@ live_loop :lunar_sweep do
 
   #cue :drum
   autosync(:fx)
-  with_fx :reverb, mix: 0.5, room: 0.7 do
+  with_fx :reverb, mix: 0.5, room: 0.4 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
 
       2.times do
@@ -161,66 +161,66 @@ end
 
 ##############  DRUMS  #########################
 
-live_loop :kick do
+# live_loop :kick do
 
-  autosync(:drum)
-  cue :drum
-  cue :syn
-  #slp = (knit 4,4)
-  slp = (ring 1, 0.5, 1.5, 0.5, 0.5)
+#   autosync(:drum)
+#   cue :drum
+#   cue :syn
+#   #slp = (knit 4,4)
+#   slp = (ring 1, 0.5, 1.5, 0.5, 0.5)
 
-  8.times do
-    slp.size.times do
-      sample :bd_pure, rate: 0.85 * rdist(0.008, 1), amp: 0.8
-      sleep slp.tick
-    end
-  end
-  #stop
-end
-
-
-live_loop :brush do
-
-  autosync(:drum)
-  #slp = (knit 0.5, 32)
-  slp = (knit 0.5, 2, 0.25, 2, 0.5, 2, 0.25, 1, 0.125, 2, 0.5, 2)
-  8.times do
-    slp.size.times do
-      sample :elec_cymbal, rate: 4 * rdist(0.008, 1), amp: 0.077, attack: 0.0275, cutoff: 90, res: 0.1, pan: -0.25
-      sleep slp.tick
-    end
-  end
-  #stop
-end
+#   8.times do
+#     slp.size.times do
+#       sample :bd_pure, rate: 0.85 * rdist(0.008, 1), amp: 0.8
+#       sleep slp.tick
+#     end
+#   end
+#   #stop
+# end
 
 
-live_loop :pale_rider do
+# live_loop :brush do
 
-  autosync(:drum)
-  10.times do
-    sample :drum_cymbal_soft, rate: [0.8, 0.65].choose * rdist(0.008, 1), amp: 0.04, pan: 0.25
-    sleep (knit 16, 2, 4, 4, 8, 2, 2, 2, ).tick
-  end
-  #stop
-end
+#   autosync(:drum)
+#   #slp = (knit 0.5, 32)
+#   slp = (knit 0.5, 2, 0.25, 2, 0.5, 2, 0.25, 1, 0.125, 2, 0.5, 2)
+#   8.times do
+#     slp.size.times do
+#       sample :elec_cymbal, rate: 4 * rdist(0.008, 1), amp: 0.077, attack: 0.0275, cutoff: 90, res: 0.1, pan: -0.25
+#       sleep slp.tick
+#     end
+#   end
+#   #stop
+# end
+
+
+# live_loop :pale_rider do
+
+#   autosync(:drum)
+#   10.times do
+#     sample :drum_cymbal_soft, rate: [0.8, 0.65].choose * rdist(0.008, 1), amp: 0.04, pan: 0.25
+#     sleep (knit 16, 2, 4, 4, 8, 2, 2, 2, ).tick
+#   end
+#   #stop
+# end
 
 
 ##############  SYNTHS  #########################
 
-live_loop :sine_bass do ## sine amp- 0.225 & 0.08
+# live_loop :sine_bass do ## sine amp- 0.225 & 0.08
 
-  autosync(:drum)
-  use_synth :sine
-  #notes = (knit :c2, 3, :ds2, 1)
-  notes = (knit :c2, 4, :ds2, 1, :f2, 1)
-  cut = [75, 80, 85, 90, 85, 80, 75].ring
-  notes.size.times do
-    play notes.tick, amp: 0.2, decay: 0.75, sustain_level: 0.5, sustain: 0.75, release: 1#, cutoff: 75
-    #synth :prophet, note: notes.look, amp: 0.035, decay: 1, sustain_level: 0.6, sustain: 2, release: 1, cutoff: cut.tick(:ctick)
-    sleep 4
-  end
-  #stop
-end
+#   autosync(:drum)
+#   use_synth :sine
+#   #notes = (knit :c2, 3, :ds2, 1)
+#   notes = (knit :c2, 4, :ds2, 1, :f2, 1)
+#   cut = [75, 80, 85, 90, 85, 80, 75].ring
+#   notes.size.times do
+#     play notes.tick, amp: 0.2, decay: 0.75, sustain_level: 0.5, sustain: 0.75, release: 1#, cutoff: 75
+#     #synth :prophet, note: notes.look, amp: 0.035, decay: 1, sustain_level: 0.6, sustain: 2, release: 1, cutoff: cut.tick(:ctick)
+#     sleep 4
+#   end
+#   #stop
+# end
 
 
 ##
