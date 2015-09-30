@@ -23,12 +23,12 @@ use_cue_logging true
 ##############  FX  #########################
 
 live_loop :pulsar do
-  # cue :hum
+  cue :hum
   cue :drn
   # cue :fx
-  # cue :run
+  cue :run
 
-  sync :pulse
+  autosync(:pulse)
   use_synth :growl
   cut = [70, 75, 80, 85, 90, 85, 80, 75].ring.tick(:cut)
   notes = (knit :c3, 2, :ds3, 1, :c3, 1)
@@ -51,7 +51,7 @@ live_loop :res_hum do
   # notes = scale(:c1, :hungarian_minor, num_octaves: 2).shuffle
   notes = scale(:c1, :harmonic_minor, num_octaves: 2).shuffle
 
-  vol = 0.4
+  vol = 0.5
 
   #2.times do
   notes.size.times do
@@ -84,7 +84,6 @@ live_loop :res_hum do
 end
 
 live_loop :runner do
-  cue :pulse
 
   autosync(:run)
   use_synth :blade
@@ -92,62 +91,53 @@ live_loop :runner do
 
   # scl = scale([:c4, :c5, :c6].choose, :humgarian_minor, num_octaves: 1)
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
-
-  notes = mk_rand_scale(scl, 3)
-  puts "Runner scale: #{notes}"
-  #slp = [6, 10, 6, 8, 12, 6, 6, 8, 6, 18, 6, 8, 6, 14, 6, 8, 6, 32].ring
-  #slp = [6, 4, 6, 6, 2, 4, 2, 2, 8, 12, 8, 8, 16, 24, 16, 16].ring #6, 2, 8, 10, 6, 4, 4, 4, 8, 4, 8, 6, 8, 16].ring
-  #slp = [6, 4, 6, 6, 2, 4, 2, 2, 8, 12, 8, 8, 16, 24, 16, 16].ring
-  slp = [3,3,2].ring#,3,2,2,2,4].ring
-  puts "sleepsize: #{slp.size}"
-  (slp.size * 2).times do
-    att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
-    phase = [0.25, 0.5, 0.75, 1].choose
-    # with_fx :reverb do
-    with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
-      with_fx :ring_mod, freq: rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd)) do
-        with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-          #play notes.tick, amp: 0.025, attack: 2, sustain: 1, release: 3, cutoff: 85
-          #play notes.tick, amp: 0.018, attack: 2, sustain: 1, release: 3, cutoff: 85
-          play notes.look, amp: 0.015, attack: att, sustain: sus, release: rel, cutoff: 85
-          puts "Runner sleep: #{slp.look}"
-          sleep slp.look# * [1, 2, 4].choose
+  2.times do
+    notes = mk_rand_scale(scl, 3)
+    puts "Runner scale: #{notes}"
+    #slp = [6, 10, 6, 8, 12, 6, 6, 8, 6, 18, 6, 8, 6, 14, 6, 8, 6, 32].ring
+    #slp = [6, 4, 6, 6, 2, 4, 2, 2, 8, 12, 8, 8, 16, 24, 16, 16].ring #6, 2, 8, 10, 6, 4, 4, 4, 8, 4, 8, 6, 8, 16].ring
+    #slp = [6, 4, 6, 6, 2, 4, 2, 2, 8, 12, 8, 8, 16, 24, 16, 16].ring
+    slp = [3,3,2].ring#,3,2,2,2,4].ring
+    puts "sleepsize: #{slp.size}"
+    (slp.size * 2).times do
+      att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
+      phase = [0.25, 0.5, 0.75, 1].choose
+      # with_fx :reverb do
+      with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
+        with_fx :ring_mod, freq: rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd)) do
+          with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
+            #play notes.tick, amp: 0.025, attack: 2, sustain: 1, release: 3, cutoff: 85
+            #play notes.tick, amp: 0.018, attack: 2, sustain: 1, release: 3, cutoff: 85
+            play notes.look, amp: 0.01, attack: att, sustain: sus, release: rel, cutoff: 85
+            puts "Runner sleep: #{slp.look}"
+            sleep slp.look# * [1, 2, 4].choose
+          end
         end
       end
+      # end
+      #stop
     end
-    # end
-    #stop
+    # sleep [2, 4, 6, 8, 10, 12, 14, 16, 24, 32].choose
   end
-  # sleep [2, 4, 6, 8, 10, 12, 14, 16, 24, 32].choose
   sleep [4, 8, 12, 16].choose
 end
 
 live_loop :drone do
   #tick reset(:as)
   autosync(:drn)
-  #notes = chord(:c1, :minor, num_octaves: 2).shuffle
-  #notes = scale(:c1, :hungarian_minor, num_octaves: 1).shuffle
-  # notes = (ring 26, 27, 31, 32, 24, 35, 36, 30)
-  # notes = (ring 26, 27, 31, 32, 24, 35, 36, 30)
+  # cue :pulse
   scl = scale([:c5].choose, :harmonic_minor, num_octaves: 1)
   # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
   notes = mk_rand_scale(scl, 4)
 
   puts "Dronescale: #{notes}"
-  (notes.size * 4).times do
+  (notes.size * 2).times do
     frq = midi_to_hz(notes.tick)
     del = (1.0 / frq)# * 2
-    #with_fx :reverb, mix: 0.5, room: 0.7 do
     with_fx :echo, amp: 0.4, mix: 1, phase: del, decay: 2 do
-      #with_fx :ring_mod, freq: frq do
-      #with_fx :slicer, mix: 0.35, phase: [0.25, 0.5, 0.75].choose do
-      sample :ambi_drone, attack: 0.6, pan: 0, amp: 0.4, rate: 0.5 # (ring 0.25, 0.5).tick(:ambi)
+      sample :ambi_drone, attack: 0.6, pan: 0, amp: 0.5, rate: 0.5 # (ring 0.25, 0.5).tick(:ambi)
       sleep 8
-      #sleep 4
-      #end
     end
-    #end
-    #end
   end
   #stop
 end
