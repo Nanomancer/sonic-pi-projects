@@ -5,7 +5,6 @@ define :autosync do |id, num = 0|
   return sync id if tick(:as) == num
 end
 
-
 define :mk_rand_scale do |scale, len = 8|
   rand_s = []
   len.times do
@@ -23,13 +22,13 @@ use_random_seed 100
 ##############  BASS  #########################
 
 live_loop :pulsar do
+  autosync(:pulse)
   puts "Pulsar"
-  #cue :res
   # cue :drn
-  #cue :fx
+
+  # cue :fx
   #cue :trans
 
-  autosync(:pulse)
   use_synth :growl
   cut = [60, 65, 70, 75, 80, 85, 80, 75, 70, 65].ring.tick(:cut)
   #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
@@ -48,7 +47,7 @@ end
 live_loop :drone do
   #tick reset(:as)
   #autosync(:drn)
-  #cue :pulse
+  # cue :res
   scl = scale([:c5].choose, :harmonic_minor, num_octaves: 1)
   # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
   notes = mk_rand_scale(scl, 4)
@@ -66,7 +65,7 @@ live_loop :drone do
 end
 
 live_loop :resonance do
-  #cue :drn
+  # cue :pulse
   autosync(:res)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
   notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
@@ -93,6 +92,7 @@ live_loop :resonance do
             with_fx :echo, amp: 0.5, mix: 0.85, phase: 1.0 / frq, decay: 2 do
               sample :ambi_haunted_hum, beat_stretch: 4, pan: 0.75, amp: vol, rate: (ring 0.25, -0.5, -0.25).look(:ambi)
             end
+            cue :pulse
             sleep [16, 8, 16].ring.look(:ambi)
           end
           sleep [4, 6, 8, 12, 16].choose
@@ -135,8 +135,8 @@ live_loop :transmission do
 end
 
 live_loop :static do
-  puts "Static"
   autosync(:fx)
+  puts "Static"
   with_fx :reverb, mix: 0.5, room: 0.5 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
       phase = [0.5, 0.25, 0.75, 1].ring
