@@ -26,8 +26,8 @@ live_loop :pulsar do
   puts "Pulsar"
   # cue :drn
 
-  # cue :fx
-  #cue :trans
+  cue :stc
+  cue :trans
 
   use_synth :growl
   cut = [60, 65, 70, 75, 80, 85, 80, 75, 70, 65].ring.tick(:cut)
@@ -35,7 +35,7 @@ live_loop :pulsar do
   #notes = (knit :c3, 2, :ds3, 1, :c3, 2, :b2, 1)
   notes = (knit :c3, 2, :ds3, 1, :c3, 1)
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
-    (notes.size * 4).times do
+    (notes.size * 2).times do
       play notes.tick, amp: 0.1, attack: 1, sustain: 1, release: 2, cutoff: cut, res: 0.2
       sleep 8
     end
@@ -47,7 +47,7 @@ end
 live_loop :drone do
   #tick reset(:as)
   #autosync(:drn)
-  # cue :res
+  cue :prb
   scl = scale([:c5].choose, :harmonic_minor, num_octaves: 1)
   # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
   notes = mk_rand_scale(scl, 4)
@@ -64,12 +64,12 @@ live_loop :drone do
   #stop
 end
 
-live_loop :resonance do
+live_loop :probe do
   # cue :pulse
-  autosync(:res)
+  autosync(:prb)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
   notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
-  puts "Resonance sequence: #{notes}"
+  puts "Probe sequence: #{notes}"
 
   vol = 0.5
 
@@ -79,7 +79,7 @@ live_loop :resonance do
       with_fx :compressor, threshold:  0.4 do
         with_fx :lpf, res: 0.1, cutoff: [70, 75, 80, 85].choose do
           phase = [0.25, 0.5, 0.75, 1, 1.5, 2].choose
-          puts "Resonance AM: #{phase}"
+          puts "Probe AM: #{phase}"
           with_fx :slicer, mix: [1, 0.75, 0.5, 0.25].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
 
             frq = midi_to_hz(notes.tick)
@@ -92,10 +92,10 @@ live_loop :resonance do
             with_fx :echo, amp: 0.5, mix: 0.85, phase: 1.0 / frq, decay: 2 do
               sample :ambi_haunted_hum, beat_stretch: 4, pan: 0.75, amp: vol, rate: (ring 0.25, -0.5, -0.25).look(:ambi)
             end
-            cue :pulse
             sleep [16, 8, 16].ring.look(:ambi)
           end
           sleep [4, 6, 8, 12, 16].choose
+          cue :pulse
         end
       end
     end
@@ -135,7 +135,7 @@ live_loop :transmission do
 end
 
 live_loop :static do
-  autosync(:fx)
+  autosync(:stc)
   puts "Static"
   with_fx :reverb, mix: 0.5, room: 0.5 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
