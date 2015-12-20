@@ -15,28 +15,29 @@ end
 
 #######################
 use_bpm 60
-set_volume! 5
+set_volume! 3
 set_sched_ahead_time! 3
 use_cue_logging false
-use_random_seed 100
+use_random_seed Time.now.usec # 100
+
 ##############  BASS  #########################
 
 live_loop :pulsar do
   autosync(:pulse)
   puts "Pulsar"
-  # cue :drn
 
-  cue :stc
-  cue :trans
+  # cue :stc
+  # cue :trans
 
   use_synth :growl
-  cut = [60, 65, 70, 75, 80, 85, 80, 75, 70, 65].ring.tick(:cut)
+
+  cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
   #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
   #notes = (knit :c3, 2, :ds3, 1, :c3, 2, :b2, 1)
   notes = (knit :c3, 2, :ds3, 1, :c3, 1)
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     (notes.size * 2).times do
-      play notes.tick, amp: 0.1, attack: 1, sustain: 1, release: 2, cutoff: cut, res: 0.2
+      play notes.tick, amp: 0.175, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
     end
   end
@@ -44,34 +45,42 @@ live_loop :pulsar do
   # sleep [8, 16, 24].choose
 end
 
-live_loop :drone do
-  #tick reset(:as)
-  #autosync(:drn)
-  cue :prb
-  scl = scale([:c5].choose, :harmonic_minor, num_octaves: 1)
-  # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
-  notes = mk_rand_scale(scl, 4)
+############## TUNED RESONATED DRONE  #########################
 
-  puts "Drone sequence: #{notes}"
-  (notes.size * 2).times do
-    frq = midi_to_hz(notes.tick)
-    del = (1.0 / frq)# * 2
-    with_fx :echo, amp: 0.5, mix: 1, phase: del, decay: 2 do
-      sample :ambi_drone, attack: 0.6, pan: 0, amp: 0.7, rate: 0.5
-      sleep 8
+live_loop :drone do
+  autosync(:drn)
+  # cue :prb
+  # cue :pulse
+
+  scl = scale(:c5, :harmonic_minor, num_octaves: 1)[0..4]
+  # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
+  2.times do
+    notes = mk_rand_scale(scl, 4)
+
+    puts "Drone sequence: #{notes}"
+    (notes.size * 2).times do
+      frq = midi_to_hz(notes.tick)
+      del = (1.0 / frq)# * 2
+      with_fx :echo, amp: 1, mix: 1, phase: del, decay: 2 do
+        sample :ambi_drone, attack: 0.6, pan: 0, amp: 0.8, rate: 0.5, cutoff: 117.5
+        sleep 8
+      end
     end
   end
+  sleep [4, 8, 12].choose
   #stop
 end
 
+##############  TUNED RESONATED HUM  #########################
+
 live_loop :probe do
-  # cue :pulse
   autosync(:prb)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
-  notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
+  #notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
+  notes = (ring 60, 62, 63, 65, 60, 68, 71, 72).shuffle
   puts "Probe sequence: #{notes}"
 
-  vol = 0.5
+  vol = 1
 
   notes.size.times do
 
@@ -94,8 +103,7 @@ live_loop :probe do
             end
             sleep [16, 8, 16].ring.look(:ambi)
           end
-          sleep [4, 6, 8, 12, 16].choose
-          cue :pulse
+          sleep [4, 6, 8, 12, 16, 32].choose
         end
       end
     end
@@ -103,9 +111,11 @@ live_loop :probe do
   #stop
 end
 
+##############  TUNED RINGMOD / SYNTH  #########################
+
 live_loop :transmission do
 
-  autosync(:trans)
+  # autosync(:trans)
   use_synth :blade
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
@@ -113,7 +123,8 @@ live_loop :transmission do
   2.times do
     notes = mk_rand_scale(scl, 3)
     puts "Transmission sequence: #{notes}"
-    slp = [[3,3,2], [6,6,4], [8,8,4], [12,6,12]].choose.ring
+    slp = [[3,3,2], [6,6,4], [8,8,4], [8,8,4,2,4], [12,6,12]].choose.ring
+    slp = [8,8,4,2,4].ring
 
     (slp.size * 2).times do
       att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
@@ -123,7 +134,7 @@ live_loop :transmission do
       with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
         with_fx :ring_mod, freq: mod_frq do
           with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-            play notes.look, amp: 0.025, attack: att, sustain: sus, release: rel, cutoff: 85
+            play notes.look, amp: 0.075, attack: att, sustain: sus, release: rel, cutoff: 85
             sleep slp.look
           end
         end
@@ -143,12 +154,12 @@ live_loop :static do
       2.times do
         with_fx :slicer, smooth_up: 0.125, mix: 0.75, phase: phase.tick do
           puts "Static AM: #{phase.look}"
-          sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.125, rate: (ring -1, -2, -0.5).look
+          sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.2, rate: (ring -1, -2, -0.5).look
           sleep [8, 4, 16].ring.look
-          sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.125, rate: (ring 1, 2, 0.5).look
+          sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.2, rate: (ring 1, 2, 0.5).look
           sleep 16
         end
-        sleep 24
+        sleep [12, 24, 32].choose
       end
     end
   end
