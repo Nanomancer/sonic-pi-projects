@@ -7,7 +7,7 @@ define :stopwatch do |int=30, max=6|
   while count / 60.0 < max
     count += int
     sleep int
-    puts "#{count} Seconds | #{count / 60.0} Minutes"
+    puts "Time: #{count / 60.0} Minutes"
   end
   puts "STOP!"
 end
@@ -41,7 +41,7 @@ use_random_seed Time.now.usec # 100
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(15, 20)
+  stopwatch(30, 20)
 end
 
 ##############  BASS  #########################
@@ -63,7 +63,7 @@ live_loop :pulsar do
     end
   end
   cue :trans
-  autostop(rrand_i 6, 12)
+  autostop(rrand_i 2, 6)
   sleep [8, 16, 24].choose
 end
 
@@ -87,7 +87,7 @@ live_loop :drone do
     end
   end
   cue :prb
-  autostop(rrand_i 6, 12)
+  autostop(rrand_i 4, 8)
 end
 
 ##############  TUNED RESONATED HUM  #########################
@@ -159,7 +159,7 @@ live_loop :transmission do
           end
         end
       end
-      autostop(rrand_i 8, 16)
+      autostop(rrand_i 2, 4)
     end
   end
   sleep [4, 8, 12, 16, 32].choose
@@ -184,5 +184,5 @@ live_loop :static do
       end
     end
   end
-  autostop(rrand_i 8, 16)
+  autostop(rrand_i 2, 4)
 end
