@@ -19,7 +19,7 @@ define :autosync do |id, num = 0|
 end
 
 define :autostop do |num = 8|
-  return stop if look(:as) == num
+  return stop if look(:as) >= num
 end
 
 define :mk_rand_scale do |scale, len = 8|
@@ -36,7 +36,9 @@ use_bpm 60
 set_volume! 3
 set_sched_ahead_time! 3
 use_cue_logging false
-use_random_seed Time.now.usec # 100
+SEED = Time.now.usec
+puts "Epoch seed: #{SEED}"
+use_random_seed SEED # 100
 
 #############  CLOCK  #####################
 
@@ -63,7 +65,7 @@ live_loop :pulsar do
     end
   end
   cue :trans
-  autostop(rrand_i 2, 6)
+  autostop(rrand_i 2, 4)
   sleep [8, 16, 24].choose
 end
 
@@ -87,7 +89,7 @@ live_loop :drone do
     end
   end
   cue :prb
-  autostop(rrand_i 4, 8)
+  autostop(rrand_i 4, 6)
 end
 
 ##############  TUNED RESONATED HUM  #########################
@@ -143,8 +145,7 @@ live_loop :transmission do
   2.times do
     notes = mk_rand_scale(scl, 3)
     puts "Transmission sequence: #{notes}"
-    slp = [[3,3,2], [6,6,4], [8,8,4], [8,8,4,1,2,4], [12,6,12]].choose.ring
-    slp = [8,8,4,2,4].ring
+    slp = [[3,3,2], [6,6,4], [8,8,4], [12,6,12]].choose.ring
 
     (slp.size * 2).times do
       att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
@@ -159,7 +160,7 @@ live_loop :transmission do
           end
         end
       end
-      autostop(rrand_i 2, 4)
+      autostop(rrand_i 2, 3)
     end
   end
   sleep [4, 8, 12, 16, 32].choose
