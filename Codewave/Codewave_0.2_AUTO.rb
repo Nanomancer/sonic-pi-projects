@@ -4,18 +4,21 @@
 define :stopwatch do |int=30, max=6|
   ## interval in seconds, max in mins
   count = 0
+  set_mixer_control! amp: 1
   while count / 60.0 < max
     count += int
     sleep int
     puts "Time: #{count / 60.0} Minutes"
   end
-  puts "STOP!"
+  set_mixer_control! amp: 0.1, amp_slide: 16
+  puts "Stopping - 16 sec fadeout"
 end
 
 
 define :autosync do |id, num = 0|
+  tick(:as)
   puts "Liveloop ID: #{id} | tick no: #{look(:as)}"
-  return sync id if tick(:as) == num
+  return sync id if look(:as) == num
 end
 
 define :autostop do |num = 8|
@@ -33,23 +36,24 @@ end
 #######################
 
 use_bpm 60
-set_volume! 3
-set_sched_ahead_time! 3
+set_volume! 4
+set_sched_ahead_time! 4
 use_cue_logging false
 SEED = Time.now.usec
 puts "Epoch seed: #{SEED}"
-use_random_seed SEED # 100
+use_random_seed 263020#SEED # 746742 # 100
 
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(30, 20)
+  stopwatch(30, 6)
 end
 
 ##############  BASS  #########################
 
 live_loop :pulsar do
   autosync(:pulse)
+  autostop(rrand_i 3, 5)
   puts "Pulsar"
 
 
@@ -65,7 +69,6 @@ live_loop :pulsar do
     end
   end
   cue :trans
-  autostop(rrand_i 2, 4)
   sleep [8, 16, 24].choose
 end
 
@@ -74,6 +77,7 @@ cue :drn
 
 live_loop :drone do
   autosync(:drn)
+  autostop(6) #(rrand_i 6, 8)
 
   scl = scale(:c5, :harmonic_minor, num_octaves: 1)[0..4]
   # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
@@ -89,13 +93,13 @@ live_loop :drone do
     end
   end
   cue :prb
-  autostop(rrand_i 4, 6)
 end
 
 ##############  TUNED RESONATED HUM  #########################
 
 live_loop :probe do
   autosync(:prb)
+  autostop(2)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
   #notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
   notes = (ring 60, 62, 63, 65, 68, 71, 72).shuffle
@@ -130,7 +134,6 @@ live_loop :probe do
       end
     end
   end
-  autostop(2)
 end
 
 ##############  TUNED RINGMOD / SYNTH  #########################
@@ -138,36 +141,35 @@ end
 live_loop :transmission do
 
   autosync(:trans)
+  autostop(rrand_i 4, 6)
   use_synth :blade
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
 
-  2.times do
-    notes = mk_rand_scale(scl, 3)
-    puts "Transmission sequence: #{notes}"
-    slp = [[3,3,2], [6,6,4], [8,8,4], [12,6,12]].choose.ring
+  notes = mk_rand_scale(scl, 3)
+  puts "Transmission sequence: #{notes}"
+  slp = [[3,3,2], [6,6,4], [8,8,4], [12,6,12]].choose.ring
 
-    (slp.size * 2).times do
-      att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
-      phase = [0.25, 0.5, 0.75, 1].choose
-      mod_frq = rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd))
-      puts "Transmission AM: #{phase} | Ring mod frq: #{mod_frq}"
-      with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
-        with_fx :ring_mod, freq: mod_frq do
-          with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-            play notes.look, amp: 0.08, attack: att, sustain: sus, release: rel, cutoff: 85
-            sleep slp.look
-          end
+  (slp.size * 2).times do
+    att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
+    phase = [0.25, 0.5, 0.75, 1].choose
+    mod_frq = rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd))
+    puts "Transmission AM: #{phase} | Ring mod frq: #{mod_frq}"
+    with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
+      with_fx :ring_mod, freq: mod_frq do
+        with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
+          play notes.look, amp: 0.09, attack: att, sustain: sus, release: rel, cutoff: 85
+          sleep slp.look
         end
       end
-      autostop(rrand_i 2, 3)
     end
   end
-  sleep [4, 8, 12, 16, 32].choose
+  sleep [4, 8, 12, 16, 20].choose
 end
 
 live_loop :static do
   autosync(:stc)
+  autostop(rrand_i 2, 4)
   puts "Static"
   with_fx :reverb, mix: 0.5, room: 0.5 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
@@ -181,9 +183,8 @@ live_loop :static do
           sleep 16
         end
         cue :pulse
-        sleep [12, 24, 32].choose
+        sleep [10, 16, 20].choose
       end
     end
   end
-  autostop(rrand_i 2, 4)
 end
