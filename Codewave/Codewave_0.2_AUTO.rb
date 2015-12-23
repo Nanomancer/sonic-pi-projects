@@ -1,7 +1,7 @@
 ## Codewave_0.2 -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
-define :stopwatch do |int=30, max=6|
+define :stopwatch do |int, max, fade|
   ## interval in seconds, max in mins
   count = 0
   set_mixer_control! amp: 1
@@ -10,14 +10,13 @@ define :stopwatch do |int=30, max=6|
     sleep int
     puts "Time: #{count / 60.0} Minutes"
   end
-  set_mixer_control! amp: 0.1, amp_slide: 16
+  set_mixer_control! amp: 0.01, amp_slide: fade
   puts "Stopping - 16 sec fadeout"
 end
 
-
 define :autosync do |id, num = 0|
   tick(:as)
-  puts "Liveloop ID: #{id} | tick no: #{look(:as)}"
+  puts "Liveloop ID: #{id} | No: #{look(:as)}"
   return sync id if look(:as) == num
 end
 
@@ -35,6 +34,7 @@ end
 
 #######################
 
+load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
 use_bpm 60
 set_volume! 4
 set_sched_ahead_time! 4
@@ -46,30 +46,33 @@ use_random_seed 263020#SEED # 746742 # 100
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(30, 6)
+  stopwatch(30, 5.5, 30)
 end
 
 ##############  BASS  #########################
 
 live_loop :pulsar do
   autosync(:pulse)
-  autostop(rrand_i 3, 5)
+  autostop(rrand_i 5, 8)
   puts "Pulsar"
 
 
   use_synth :growl
-  cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
+  # cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
   #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
   #notes = (knit :c3, 2, :ds3, 1, :c3, 2, :b2, 1)
   notes = (knit :c3, 2, :ds3, 1, :c3, 1)
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
-    (notes.size * 2).times do
+    notes.size.times do
+      cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
       play notes.tick, amp: 0.19, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
     end
   end
   cue :trans
-  sleep [8, 16, 24].choose
+  if one_in 3
+    sleep [8, 16, 24].choose
+  end
 end
 
 ############## TUNED RESONATED DRONE  #########################
@@ -169,7 +172,7 @@ end
 
 live_loop :static do
   autosync(:stc)
-  autostop(rrand_i 2, 4)
+  autostop(rrand_i 3, 5)
   puts "Static"
   with_fx :reverb, mix: 0.5, room: 0.5 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
@@ -187,4 +190,4 @@ live_loop :static do
       end
     end
   end
-end
+endy
