@@ -3,20 +3,24 @@
 
 
 define :stopwatch do |int, max, fade|
-  ## interval in seconds, max in mins
+  ## interval in seconds(just for log timer), max in mins, fade in secs
   count = 0
   set_mixer_control! amp: 1, amp_slide: 0.1
   with_bpm 60 do
-    while count / 60.0 < max
+    ctrl = true
+    while count / 60.0 <= max
       if count % int == 0
         puts "Time: #{count / 60.0} Minutes"
       end
       count += 1
       sleep 1
       $global_clock = count / 60.0
+      if count >= (max*60) - fade && ctrl == true
+        set_mixer_control! amp: 0.01, amp_slide: fade
+        puts "Stopping - #{fade} sec fadeout"
+        ctrl = false
+      end
     end
-    set_mixer_control! amp: 0.01, amp_slide: fade
-    puts "Stopping - #{fade} sec fadeout"
   end
 end
 
@@ -24,6 +28,10 @@ define :autosync do |id, num = 0|
   tick(:as)
   puts "Liveloop ID: #{id} | No: #{look(:as)}"
   return sync id if look(:as) == num
+end
+
+define :autocue do |id, time|
+  return cue id if $global_clock >= time
 end
 
 define :autostop do |time|
@@ -48,8 +56,11 @@ set_sched_ahead_time! 6
 use_cue_logging false
 SEED = Time.now.usec
 puts "Epoch seed: #{SEED}"
-use_random_seed 471646 # 220574 # 263020 # 746742 # 100
-# use_random_seed SEED # 746742 # 100
+# use_random_seed  #  # 220574 # 263020 # 746742 # 100
+# use_random_seed 471646
+# use_random_seed 32625
+# use_random_seed 489370
+use_random_seed SEED # 746742 # 100
 
 sleep 2
 sample :elec_blip
@@ -80,7 +91,6 @@ live_loop :pulsar do
       sleep 8
     end
   end
-  cue :trans
   if one_in 3
     sleep [8, 16, 24].choose
   end
@@ -92,20 +102,24 @@ cue :drn
 live_loop :drone do
   autosync(:drn)
   autostop(5) #(rrand_i 6, 8)
+  autocue(:prb, (rrand 0, 2))
+  autocue(:pulse, (rrand 0, 2))
+  autocue(:stc, (rrand 0, 2))
+  autocue(:trans, (rrand 1, 2.5))
 
   scl = scale(:c5, :harmonic_minor, num_octaves: 1)[0..4]
   # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
   notes = mk_rand_scale(scl, 4)
 
   puts "Drone sequence: #{notes}"
-  (notes.size * 2).times do
+  #  (notes.size * 2).times do
+  notes.size * 2.times do
     frq = midi_to_hz(notes.tick)
     del = (1.0 / frq)# * 2
     with_fx :echo, amp: 1, mix: 1, phase: del, decay: 2 do
       sample :ambi_drone, attack: 0.6, pan: 0, amp: 0.8, rate: 0.5, cutoff: 117.5
       sleep 8
     end
-    cue :prb
   end
 end
 
@@ -142,7 +156,6 @@ live_loop :probe do
             end
             sleep [16, 8, 16].ring.look(:ambi)
           end
-          cue :stc
           sleep [4, 6, 8, 12, 16].choose
         end
       end
@@ -153,10 +166,10 @@ end
 ##############  TUNED RINGMOD / SYNTH  #########################
 
 live_loop :transmission do
+  use_synth :blade
 
   autosync(:trans)
-  autostop(rrand 3, 5) # (rrand_i 5, 7)
-  use_synth :blade
+  autostop(rrand 4, 5) # (rrand_i 5, 7)
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
 
@@ -197,7 +210,6 @@ live_loop :static do
           sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.15, rate: (ring 1, 2, 0.5).look
           sleep 16
         end
-        cue :pulse
         sleep [10, 16, 20].choose
       end
     end
