@@ -48,8 +48,8 @@ set_sched_ahead_time! 6
 use_cue_logging false
 SEED = Time.now.usec
 puts "Epoch seed: #{SEED}"
-# use_random_seed 220574 # 263020 # 746742 # 100
-use_random_seed SEED # 746742 # 100
+use_random_seed 471646 # 220574 # 263020 # 746742 # 100
+# use_random_seed SEED # 746742 # 100
 
 sleep 2
 sample :elec_blip
@@ -66,7 +66,7 @@ end
 live_loop :pulsar do
   use_synth :growl
   autosync(:pulse)
-  autostop(rrand 3.5, 5) # (rrand_i 5, 8)
+  autostop(rrand 3, 5) # (rrand_i 5, 8)
   puts "Pulsar"
 
   # cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
@@ -113,7 +113,7 @@ end
 
 live_loop :probe do
   autosync(:prb)
-  autostop(rrand 3.5, 5)
+  autostop(rrand 3, 5)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
   #notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
   notes = (ring 60, 62, 63, 65, 68, 71, 72).shuffle
@@ -155,7 +155,7 @@ end
 live_loop :transmission do
 
   autosync(:trans)
-  autostop(rrand 4, 5) # (rrand_i 5, 7)
+  autostop(rrand 3, 5) # (rrand_i 5, 7)
   use_synth :blade
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
@@ -184,7 +184,7 @@ end
 
 live_loop :static do
   autosync(:stc)
-  autostop(rrand 3.5, 5)
+  autostop(rrand 3, 5)
   puts "Static"
   with_fx :reverb, mix: 0.5, room: 0.5 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
