@@ -47,6 +47,7 @@ define :mk_rand_scale do |scale, len = 8|
 end
 
 #######################
+max_t = 6
 
 load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
 $global_clock = 0
@@ -69,7 +70,7 @@ sleep 2
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(15, 5, 30)
+  stopwatch(15, max_t, max_t*60*0.1)
 end
 
 ##############  BASS  #########################
@@ -77,7 +78,7 @@ end
 live_loop :pulsar do
   use_synth :growl
   autosync(:pulse)
-  autostop(rrand 3, 5) # (rrand_i 5, 8)
+  autostop(rrand max_t*0.65, max_t) # (rrand_i 5, 8)
   puts "Pulsar"
 
   # cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
@@ -101,11 +102,11 @@ cue :drn
 
 live_loop :drone do
   autosync(:drn)
-  autostop(5) #(rrand_i 6, 8)
-  autocue(:prb, (rrand 0, 2))
-  autocue(:pulse, (rrand 0, 2))
-  autocue(:stc, (rrand 0, 2))
-  autocue(:trans, (rrand 1, 2.5))
+  autostop(max_t) #(rrand_i 6, 8)
+  autocue(:prb, (rrand 0, max_t*0.3))
+  autocue(:pulse, (rrand 0, max_t*0.4))
+  autocue(:stc, (rrand 0, max_t*0.4))
+  autocue(:trans, (rrand max_t*0.2, max_t*0.5))
 
   scl = scale(:c5, :harmonic_minor, num_octaves: 1)[0..4]
   # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
@@ -127,7 +128,7 @@ end
 
 live_loop :probe do
   autosync(:prb)
-  autostop(rrand 3, 5)
+  autostop(rrand max_t*0.7, max_t)
   #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
   #notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
   notes = (ring 60, 62, 63, 65, 68, 71, 72).shuffle
@@ -156,7 +157,7 @@ live_loop :probe do
             end
             sleep [16, 8, 16].ring.look(:ambi)
           end
-          sleep [4, 6, 8, 12, 16].choose
+          sleep [4, 6, 8, 12, 16, 24].choose
         end
       end
     end
@@ -169,7 +170,7 @@ live_loop :transmission do
   use_synth :blade
 
   autosync(:trans)
-  autostop(rrand 4, 5) # (rrand_i 5, 7)
+  autostop(rrand max_t*0.8, max_t) # (rrand_i 5, 7)
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
 
@@ -192,12 +193,12 @@ live_loop :transmission do
       end
     end
   end
-  sleep [4, 8, 12, 16, 20].choose
+  sleep [4, 8, 12, 16, 20, 32].choose
 end
 
 live_loop :static do
   autosync(:stc)
-  autostop(rrand 3, 5)
+  autostop(rrand max_t*0.6, max_t)
   puts "Static"
   with_fx :reverb, mix: 0.5, room: 0.5 do
     with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
@@ -210,8 +211,20 @@ live_loop :static do
           sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.15, rate: (ring 1, 2, 0.5).look
           sleep 16
         end
-        sleep [10, 16, 20].choose
+        sleep [10, 16, 20, 32].choose
       end
     end
   end
+end
+a = 0
+live_loop :fourfour do
+  # autosync(:drn)
+  if a <= 0.1
+
+    a = tick * 0.01
+  else
+    a = tick * -0.01
+  end
+  sample :bd_haus, amp: a, cutoff: 75
+  sleep 0.5
 end
