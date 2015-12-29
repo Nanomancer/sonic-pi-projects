@@ -20,6 +20,33 @@ use_random_seed Time.now.usec
 
 #   end
 
+live_loop :origin_untraceable do
+  use_synth :dark_ambience
+
+  scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
+  notes = mk_rand_scale(scl, 8)
+  sprd1 = [3,5,6].choose
+  4.times do
+    notes.size.times do
+      if (spread sprd1, 8)
+        play note notes.tick
+      end
+      sleep 0.25#[0.125, 0.25, 0.5].choose
+    end
+  end
+  if one_in 2
+    sleep [2,4,8].choose
+  end
+  4.times do
+    notes.size.times do
+      if (spread sprd1, 8)
+        play note notes.tick
+      end
+      sleep 0.25#[0.125, 0.25, 0.5].choose
+    end
+  end
+  sleep [8,16].choose
+end
 
 live_loop :fourfour do
   if one_in 5
