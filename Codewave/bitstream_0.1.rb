@@ -25,27 +25,27 @@ live_loop :origin_untraceable do
 
   scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
   notes = mk_rand_scale(scl, 8)
-  sprd1 = [3,5,6].choose
-  4.times do
-    notes.size.times do
-      if (spread sprd1, 8)
-        play note notes.tick
+  sprd1 = [2,3,5,6,7,8].choose
+  rtm_arr = (spread sprd1, 8)
+  2.times do
+
+    4.times do
+      tick_reset(:rtm)
+      tick_reset
+      sprd1.times do
+        if rtm_arr.tick(:rtm)
+          play note notes.tick
+        end
+        sleep 0.25#[0.125, 0.25, 0.5].choose
       end
-      sleep 0.25#[0.125, 0.25, 0.5].choose
     end
+    # if one_in 3
+    #   sleep [4,8].choose
+    # end
   end
-  if one_in 2
-    sleep [2,4,8].choose
-  end
-  4.times do
-    notes.size.times do
-      if (spread sprd1, 8)
-        play note notes.tick
-      end
-      sleep 0.25#[0.125, 0.25, 0.5].choose
-    end
-  end
-  sleep [8,16].choose
+  # if one_in 2
+  #   sleep [8,16].choose
+  # end
 end
 
 live_loop :fourfour do
@@ -118,7 +118,7 @@ live_loop :bitstream do
 
   # notes = (knit :c2, 2, :ds2, 1, :c2, 1)
   notes = (chord :c2, :minor)
-  if one_in 5
+  if one_in 4
     sleep [16,32].choose
   else
     with_fx :bitcrusher, mix: 0.4, bits: [5, 6].choose, sample_rate: (range 500, 3000, step: 250, inclusive: true).choose do
@@ -130,7 +130,7 @@ live_loop :bitstream do
             cut = (range 50, 110, step: 10, inclusive: true)
             cut2 = (range 110, 50, step: 10, inclusive: true)
 
-            s = play notes.tick, note_slide: 0.5, amp: 0.3, attack: 0.1, sustain: 8, release: 0.1, cutoff: cut.look(:cut), cutoff_slide: 4, res: 0.2
+            s = play notes.tick, note_slide: 0.5, amp: 0.25, attack: 0.1, sustain: 8, release: 0.1, cutoff: cut.look(:cut), cutoff_slide: 4, res: 0.2
             control s, cutoff: cut2.look(:cut)
             sleep 4
             control s, cutoff: cut.tick(:cut)
