@@ -1,6 +1,8 @@
 set_volume! 5
-use_random_seed Time.now.usec
-
+epoch_seed = Time.now.usec
+puts epoch_seed
+use_random_seed epoch_seed #247444
+set_sched_ahead_time! 1
 # a = 0
 # fadeout = false
 # # tick_set 0.00
@@ -21,11 +23,11 @@ use_random_seed Time.now.usec
 #   end
 
 live_loop :fourfour do
-  if one_in 6
+  if one_in 8
     sleep [8, 16].choose
   else
     8.times do
-      sample :bd_haus, amp: 0.4, cutoff: 75, rate: 0.9
+      sample :bd_haus, amp: 0.3, cutoff: 75, rate: 0.9
       sleep 0.5
     end
   end
@@ -60,7 +62,7 @@ live_loop :offbass do
       tick
       16.times do
         sleep 0.25
-        play notes.look, release: 0.25, amp: 0.45, cutoff: 85, res: 0.1
+        play notes.look, release: 0.4, amp: 0.45, cutoff: 70, res: 0.1
         sleep 0.25
       end
     end
@@ -109,9 +111,9 @@ live_loop :bitstream do
 end
 
 
-
+sprd_arr = [3,4,5,6,7,8].shuffle
 scales_arr = []
-4.times do
+2.times do
   scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
   scales_arr << mk_rand_scale(scl, 8)
 end
@@ -120,10 +122,9 @@ puts scales_arr
 live_loop :crystal_entity do
   use_synth :dark_ambience
 
-
   notes = scales_arr.choose
 
-  sprd1 = [2,3,4,5,6,7,8].choose
+  sprd1 = sprd_arr[0..2].choose
   rtm_arr = (spread sprd1, 8)
   2.times do
     4.times do
@@ -131,16 +132,22 @@ live_loop :crystal_entity do
       tick_reset
       8.times do
         if rtm_arr.tick(:rtm)
-          play note notes.look(:rtm), amp: 1
+          if sprd1 <= 4
+            with_fx :echo, mix: 0.4, phase: [0.5, 0.75, 1, 1.5, 2, 3].choose, decay: 8 do
+              play note notes.look(:rtm), amp: 1
+            end
+          else
+            play note notes.look(:rtm), amp: 1
+          end
         end
         sleep 0.25#[0.125, 0.25, 0.5].choose
       end
     end
     if one_in 3
-      sleep [4,8].choose
+      sleep 8
     end
   end
   if one_in 2
-    sleep [4,8].choose
+    sleep [8, 16].choose
   end
 end
