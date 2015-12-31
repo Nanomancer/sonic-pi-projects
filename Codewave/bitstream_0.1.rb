@@ -132,8 +132,8 @@ live_loop :crystal_entity do
       tick_reset
       8.times do
         if rtm_arr.tick(:rtm)
-          if sprd1 <= 4
-            with_fx :echo, mix: 0.4, phase: [0.5, 0.75, 1, 1.5, 2, 3].choose, decay: 8 do
+          if sprd1 <= 5
+            with_fx :echo, mix: 0.4, phase: [0.75, 1.5, 3].choose, decay: 8 do
               play note notes.look(:rtm), amp: 1
             end
           else

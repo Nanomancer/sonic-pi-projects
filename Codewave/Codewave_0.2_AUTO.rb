@@ -47,7 +47,7 @@ define :mk_rand_scale do |scale, len = 8|
 end
 
 #######################
-max_t = 6
+max_t = 20
 
 load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
 $global_clock = 0
@@ -78,7 +78,7 @@ end
 live_loop :pulsar do
   use_synth :growl
   autosync(:pulse)
-  autostop(rrand max_t*0.65, max_t) # (rrand_i 5, 8)
+  autostop(rrand max_t*0.75, max_t) # (rrand_i 5, 8)
   puts "Pulsar"
 
   # cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
@@ -166,6 +166,14 @@ end
 
 ##############  TUNED RINGMOD / SYNTH  #########################
 
+# sprd_arr = [3,4,5,6,7,8].shuffle
+scales_arr = []
+2.times do
+  scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
+  scales_arr << mk_rand_scale(scl, 3)
+end
+puts scales_arr
+
 live_loop :transmission do
   use_synth :blade
 
@@ -174,7 +182,9 @@ live_loop :transmission do
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
   scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
 
-  notes = mk_rand_scale(scl, 3)
+  # notes = mk_rand_scale(scl, 3)
+  notes = scales_arr.choose
+
   puts "Transmission sequence: #{notes}"
   slp = [[3,3,2], [4,4,2], [6,6,3], [8,8,4]].choose.ring
   # slp = [[3,3,2], [4,4,2], [2,3,3], [3,2,2]].choose.ring
@@ -215,16 +225,4 @@ live_loop :static do
       end
     end
   end
-end
-a = 0
-live_loop :fourfour do
-  # autosync(:drn)
-  if a <= 0.1
-
-    a = tick * 0.01
-  else
-    a = tick * -0.01
-  end
-  sample :bd_haus, amp: a, cutoff: 75
-  sleep 0.5
 end
