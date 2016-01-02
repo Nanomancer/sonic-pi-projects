@@ -47,7 +47,7 @@ define :mk_rand_scale do |scale, len = 8|
 end
 
 #######################
-max_t = 20
+max_t = 6
 
 load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
 $global_clock = 0
@@ -207,22 +207,28 @@ live_loop :transmission do
 end
 
 live_loop :static do
+  use_synth :bnoise
   autosync(:stc)
   autostop(rrand max_t*0.6, max_t)
-  puts "Static"
-  with_fx :reverb, mix: 0.5, room: 0.5 do
-    with_fx :bitcrusher, bits: [12, 14].choose, sample_rate: [4000, 8000, 12000].choose do
-      phase = [0.5, 0.25, 0.75, 1].ring
-      2.times do
-        with_fx :slicer, smooth_up: 0.125, mix: 0.75, phase: phase.tick do
-          puts "Static AM: #{phase.look}"
-          sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.15, rate: (ring -1, -2, -0.5).look
-          sleep [8, 4, 16].ring.look
-          sample :ambi_lunar_land, cutoff: 110, beat_stretch: 8, amp: 0.15, rate: (ring 1, 2, 0.5).look
-          sleep 16
+  scl = scale(:c2, :harmonic_minor, num_octaves: 2).choose
+  mod_frq = midi_to_hz(scl)
+  phs = [0.125, 0.5, 0.25, 0.75, 1].choose
+  len = [6, 8, 10, 12, 16, 24].choose
+  puts "Static - AM: #{phs} | Len: #{len}"
+  with_fx :hpf, cutoff: 80 do
+    with_fx :ring_mod, freq: mod_frq do
+      with_fx :slicer, smooth_up: phs*0.25, mix: rrand(0.25,0.9), phase: phs do
+        with_fx :reverb, mix: 0.5, room: 0.5 do
+          cut = rrand 50, 80
+          amt = cut + (rrand 0, 40)
+          s = play :c4, amp: 0.02, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.7)
+          control s, cutoff: amt
+          sleep len*0.5
+          control s, cutoff: cut
+          sleep len*0.5
         end
-        sleep [10, 16, 20, 32].choose
       end
     end
   end
+  sleep [10, 16, 20, 32].choose
 end
