@@ -23,6 +23,14 @@ set_sched_ahead_time! 1
 
 #   end
 
+define :mk_rand_scale do |scale, len = 8|
+  rand_s = []
+  len.times do
+    rand_s << scale.choose
+  end
+  return rand_s.ring
+end
+
 live_loop :fourfour do
   if one_in 8
     sleep [8, 16].choose
@@ -62,7 +70,7 @@ live_loop :looper2 do
       slp = len
     end
     2.times do
-      sample :loop_garzul, beat_stretch: len, amp: 0.15
+      sample :loop_garzul, beat_stretch: len, amp: 0.1
       sleep slp
     end
   end
@@ -98,8 +106,8 @@ live_loop :bitstream do
   # use_synth :growl
   use_synth :dpulse
 
-  autosync(:pulse)
-  autostop(rrand max_t*0.65, max_t) # (rrand_i 5, 8)
+  # autosync(:pulse)
+  # autostop(rrand max_t*0.65, max_t) # (rrand_i 5, 8)
 
   # notes = (knit :c2, 2, :ds2, 1, :c2, 1)
   notes = (chord :c2, :minor)
@@ -119,7 +127,7 @@ live_loop :bitstream do
             cut = (range 50, 110, step: 10, inclusive: true)
             cut2 = (range 110, 50, step: 10, inclusive: true)
 
-            s = play notes.tick, note_slide: 0.5, amp: 0.1, attack: 0.1, sustain: 8, release: 0.1, cutoff: cut.look(:cut), cutoff_slide: 4, res: 0.2
+            s = play notes.tick, note_slide: 0.5, amp: 0.1, attack: 0.1, sustain: 7.8, release: 0.1, cutoff: cut.look(:cut), cutoff_slide: 4, res: 0.2
             control s, cutoff: cut2.look(:cut)
             sleep 4
             control s, cutoff: cut.tick(:cut)
@@ -134,7 +142,7 @@ live_loop :bitstream do
 end
 
 
-sprd_arr = [3,4,5,6,7,8].shuffle
+sprd_arr = [3,5,6,7,8].shuffle
 scales_arr = []
 2.times do
   scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
@@ -143,26 +151,28 @@ end
 puts scales_arr
 
 live_loop :crystal_entity do
-  use_synth :dark_ambience
+  use_synth :blade
 
   notes = scales_arr.choose
 
-  sprd1 = sprd_arr[0..2].choose
+  sprd1 = sprd_arr[0..8].choose
   rtm_arr = (spread sprd1, 8)
   2.times do
     4.times do
       tick_reset(:rtm)
       tick_reset
       8.times do
-        if rtm_arr.tick(:rtm)
-          if sprd1 <= 5
+        if rtm_arr.look(:rtm)
+
+          if sprd1 <= 2
             with_fx :echo, mix: 0.4, phase: [0.75, 1.5, 3].choose, decay: 8 do
-              play note notes.look(:rtm), amp: 1
+              play note notes.tick, amp: 0.05
             end
           else
-            play note notes.look(:rtm), amp: 1
+            play note notes.tick, amp: 0.05
           end
         end
+        tick(:rtm)
         sleep 0.25#[0.125, 0.25, 0.5].choose
       end
     end
