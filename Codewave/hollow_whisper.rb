@@ -23,7 +23,7 @@ live_loop :ambipad do
   # chords1 = (chord_degree [:i, :vi, :iii, :vii].ring.tick, :A2, :hungarian_minor, 3)
   # chords2 = (chord_degree [:i, :vi, :iii, :vii].ring.look, :A3, :hungarian_minor, 3)
   # chords1 = (chord_degree [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick, :A2, :hungarian_minor, 3)
-  chords2 = (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick, :A3, :hungarian_minor, 3)
+  chords2 = (chord_invert (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick, :A3, :hungarian_minor, 3), rrand_i(0,3))
 
   with_fx :reverb, mix: 0.7 do
     ambi_seq(chords2, 0.4, len)
@@ -61,7 +61,7 @@ live_loop :whisper do
     puts "Whisper Amp Mod: #{phase}}"
     with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
       with_fx :slicer, mix: rrand(0.2, 0.5), smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-        play notes.look, amp: 0.35, attack: att, sustain: sus, release: rel, cutoff: 85
+        # play notes.look, amp: 0.35, attack: att, sustain: sus, release: rel, cutoff: 85
         sleep slp.look
       end
     end
@@ -72,7 +72,7 @@ end
 live_loop :throb do
   use_synth :prophet
 
-  if one_in 4 then multi = 2
+  if one_in 5 then multi = 2
   elsif one_in 2 then multi = 0.5
   else multi = 1 end
 
@@ -90,4 +90,10 @@ live_loop :throb do
     sleep [8,16,32].choose
   end
 end
+
+live_loop :doombeat do
+  sample :loop_industrial, beat_stretch: 2, amp: 0.2, cutoff: 85
+  sleep 2
+end
+
 ###
