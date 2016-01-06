@@ -12,18 +12,28 @@
 
 define :ambi_seq do |chord_arr, vol, len=8|
 
-  play chord_arr[0], amp: vol*rrand(0.8, 1.2), attack: len*rrand(0.5, 0.8), sustain: len*rrand(0.25, 0.5), release: len*rrand(0.5, 0.8), cutoff: rrand(75,130)
-  play chord_arr[1], amp: vol*rrand(0.8, 1.2), attack: len*rrand(0.4, 0.7), sustain: len*rrand(0.25, 0.5), release: len*rrand(0.4, 0.7), cutoff: rrand(75,130)
-  play chord_arr[2], amp: vol*rrand(0.8, 1.2), attack: len*rrand(0.3, 0.6), sustain: len*rrand(0.25, 0.5), release: len*rrand(0.3, 0.6), cutoff: rrand(75,130)
+  play chord_arr[0], amp: vol*rrand(0.8, 1.2),
+    attack: len*rrand(0.5, 0.8), sustain: len*rrand(0.25, 0.5),
+    release: len*rrand(0.5, 0.8), cutoff: rrand(75,130), pan: -0.5
+  play chord_arr[1], amp: vol*rrand(0.8, 1.2),
+    attack: len*rrand(0.4, 0.7), sustain: len*rrand(0.25, 0.5),
+    release: len*rrand(0.4, 0.7), cutoff: rrand(75,130)
+  play chord_arr[2], amp: vol*rrand(0.8, 1.2),
+    attack: len*rrand(0.3, 0.6), sustain: len*rrand(0.25, 0.5),
+    release: len*rrand(0.3, 0.6), cutoff: rrand(75,130), pan: 0.5
 end
+
+####################################################
+
 
 live_loop :ambipad do
   use_synth :hollow
-  len = [16, 8, 8, 16, 8, 8].ring.look
+  len = 8#[16, 8, 8, 16, 8, 8].ring.look
   # chords1 = (chord_degree [:i, :vi, :iii, :vii].ring.tick, :A2, :hungarian_minor, 3)
   # chords2 = (chord_degree [:i, :vi, :iii, :vii].ring.look, :A3, :hungarian_minor, 3)
   # chords1 = (chord_degree [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick, :A2, :hungarian_minor, 3)
-  chords2 = (chord_invert (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick, :A3, :hungarian_minor, 3), rrand_i(0,3))
+  chords2 = (chord_invert (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
+                           :A3, :hungarian_minor, 3), rrand_i(0,3))
 
   with_fx :reverb, mix: 0.7 do
     ambi_seq(chords2, 0.4, len)
@@ -32,7 +42,22 @@ live_loop :ambipad do
   end
 end
 
+####################################################
 
+live_loop :darkharp do
+  sync :d_harp
+  use_synth :pretty_bell
+  chords2 = (chord_invert (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
+                           :A3, :hungarian_minor, 3), rrand_i(0,3))
+  # sleep 2
+  chords2.size.times do
+    play chords2.tick(:chrd), amp: 0.06, release: 2
+    sleep 0.125*0.5
+  end
+
+end
+
+####################################################
 
 scales_arr = []
 2.times do
@@ -61,13 +86,20 @@ live_loop :whisper do
     puts "Whisper Amp Mod: #{phase}}"
     with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
       with_fx :slicer, mix: rrand(0.2, 0.5), smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-        # play notes.look, amp: 0.35, attack: att, sustain: sus, release: rel, cutoff: 85
+        play notes.look, amp: 0.35, attack: att, sustain: sus, release: rel, cutoff: 85
         sleep slp.look
       end
     end
   end
   sleep [4, 8, 12].choose
 end
+
+####################################################
+
+
+
+####################################################
+
 
 live_loop :throb do
   use_synth :prophet
@@ -83,13 +115,18 @@ live_loop :throb do
     puts slp
     with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
       play notes, amp: 0.125, release: slp+2, cutoff: 80
-      sleep slp
+      sleep slp*0.5
+      cue :d_harp
+      sleep slp*0.5
     end
   end
   if one_in 3
     sleep [8,16,32].choose
   end
 end
+
+####################################################
+
 
 live_loop :doombeat do
   sample :loop_industrial, beat_stretch: 2, amp: 0.2, cutoff: 85
