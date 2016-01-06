@@ -71,11 +71,23 @@ end
 
 live_loop :throb do
   use_synth :prophet
-  notes = (degree [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick, :A1, :hungarian_minor)
-  slp = [4,2,2].ring.look
-  puts slp
-  with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
-    play notes, amp: 0.125, release: slp+2, cutoff: 80
-    sleep slp
+
+  if one_in 4 then multi = 2
+  elsif one_in 2 then multi = 0.5
+  else multi = 1 end
+
+  12.times do
+    notes = (degree [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick, :A1, :hungarian_minor)
+    slp = [4,2,2].ring.look
+    slp = slp*multi
+    puts slp
+    with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
+      play notes, amp: 0.125, release: slp+2, cutoff: 80
+      sleep slp
+    end
+  end
+  if one_in 3
+    sleep [8,16,32].choose
   end
 end
+###
