@@ -1,6 +1,32 @@
 ## Codewave_0.2 -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
+#######################
+
+max_t = 10
+
+load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
+$global_clock = 0
+use_bpm 60
+set_volume! 5
+set_sched_ahead_time! 2
+use_cue_logging false
+SEED = Time.now.usec
+puts "Epoch seed: #{SEED}"
+# use_random_seed  #  # 220574 # 263020 # 746742 # 100
+# use_random_seed 471646
+# use_random_seed 32625
+# use_random_seed 489370
+use_random_seed SEED # 746742 # 100
+
+# sleep 2
+# sample :elec_blip
+# puts "SYNC"
+# sleep 2
+
+
+################ FUNCTIONS ########################
+
 
 define :stopwatch do |int, max, fade|
   ## interval in seconds(just for log timer), max in mins, fade in secs
@@ -46,27 +72,7 @@ define :mk_rand_scale do |scale, len = 8|
   return rand_s.ring
 end
 
-#######################
-max_t = 6
 
-load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
-$global_clock = 0
-use_bpm 60
-set_volume! 5
-set_sched_ahead_time! 6
-use_cue_logging false
-SEED = Time.now.usec
-puts "Epoch seed: #{SEED}"
-# use_random_seed  #  # 220574 # 263020 # 746742 # 100
-# use_random_seed 471646
-# use_random_seed 32625
-# use_random_seed 489370
-use_random_seed SEED # 746742 # 100
-
-sleep 2
-sample :elec_blip
-puts "SYNC"
-sleep 2
 #############  CLOCK  #####################
 
 in_thread do
@@ -105,7 +111,7 @@ live_loop :drone do
   autostop(max_t) #(rrand_i 6, 8)
   autocue(:prb, (rrand 0, max_t*0.3))
   autocue(:pulse, (rrand 0, max_t*0.4))
-  autocue(:stc, (rrand 0, max_t*0.4))
+  autocue(:stc, (rrand 0, max_t*0.3))
   autocue(:trans, (rrand max_t*0.2, max_t*0.5))
 
   scl = scale(:c5, :harmonic_minor, num_octaves: 1)[0..4]
@@ -138,12 +144,12 @@ live_loop :probe do
 
   4.times do
 
-    with_fx :reverb, mix: [0.5, 0.6, 0.7, 0.8].choose, room: [0.6, 0.7, 0.8].choose do
+    phase = [0.25, 0.5, 0.75, 1, 1.5, 2].choose
+    puts "Probe AM: #{phase}"
+    with_fx :lpf, res: 0.1, cutoff: [70, 75, 80, 85].choose do
       with_fx :compressor, threshold:  0.4 do
-        with_fx :lpf, res: 0.1, cutoff: [70, 75, 80, 85].choose do
-          phase = [0.25, 0.5, 0.75, 1, 1.5, 2].choose
-          puts "Probe AM: #{phase}"
-          with_fx :slicer, mix: [1, 0.75, 0.5, 0.25].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
+        with_fx :slicer, mix: [1, 0.75, 0.5, 0.25].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
+          with_fx :reverb, mix: [0.5, 0.6, 0.7, 0.8].choose, room: [0.6, 0.7, 0.8].choose do
 
             frq = midi_to_hz(notes.tick)
             with_fx :echo, amp: 0.7, mix: 0.85, phase: 1.0 / frq, decay: 2 do
@@ -215,13 +221,13 @@ live_loop :static do
   phs = [0.125, 0.5, 0.25, 0.75, 1].choose
   len = [6, 8, 10, 12, 16, 24].choose
   puts "Static - AM: #{phs} | Len: #{len}"
-  with_fx :hpf, cutoff: 80 do
+  with_fx :hpf, cutoff: 60 do
     with_fx :ring_mod, freq: mod_frq do
-      with_fx :slicer, smooth_up: phs*0.25, mix: rrand(0.25,0.9), phase: phs do
-        with_fx :reverb, mix: 0.5, room: 0.5 do
-          cut = rrand 50, 80
-          amt = cut + (rrand 0, 40)
-          s = play :c4, amp: 0.02, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.7)
+      with_fx :slicer, smooth_up: phs*0.25, mix: rrand(0.3,0.9), phase: phs do
+        with_fx :reverb, mix: 0.5, room: 0.6 do
+          cut = rrand(60, 120)
+          amt = rrand(60, 120) # cut + (rrand 0, 40)
+          s = play :c4, amp: 0.04, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
           control s, cutoff: amt
           sleep len*0.5
           control s, cutoff: cut
@@ -230,5 +236,9 @@ live_loop :static do
       end
     end
   end
-  sleep [10, 16, 20, 32].choose
+  if len <= 6
+    sleep 2
+  else
+    sleep [10, 16, 20, 24].choose
+  end
 end
