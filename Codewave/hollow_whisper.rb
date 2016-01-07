@@ -36,7 +36,7 @@ live_loop :ambipad do
                            :A3, :hungarian_minor, 3), rrand_i(0,3))
 
   with_fx :reverb, mix: 0.7 do
-    ambi_seq(chords2, 0.4, len)
+    # ambi_seq(chords2, 0.8, len)
     # ambi_seq(chords2, len)
     sleep len
   end
@@ -46,22 +46,28 @@ end
 
 live_loop :darkharp do
   sync :d_harp
-  use_synth :pretty_bell
-  chords2 = (chord_invert (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
-                           :A3, :hungarian_minor, 3), rrand_i(0,3))
-  # sleep 2
-  chords2.size.times do
-    play chords2.tick(:chrd), amp: 0.06, release: 2
-    sleep 0.125*0.5
+  # use_synth :pretty_bell
+  use_synth :zawa
+
+  chords2 = (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
+             :A3, :hungarian_minor, 2)
+
+  with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
+    with_fx :reverb, mix: 0.8, room: 0.6, amp: 0.35 do
+      chords2.size.times do
+        play chords2.tick(:chrd)+[12, -12].choose, amp: 0.09, attack: 0.0625, release: 1.25, cutoff: 97
+        sleep 0.25#1.0/3
+        play chords2.tick(:chrd), amp: 0.09, attack: 0.0625, release: 1.5, cutoff: 97
+        sleep 0.25#1.0/3
+      end
+    end
   end
-
 end
-
 ####################################################
 
 scales_arr = []
 2.times do
-  scl = scale([:a4, :a5].choose, :hungarian_minor, num_octaves: 2)
+  scl = scale([:a3, :a4].choose, :hungarian_minor, num_octaves: 2)
   scales_arr << mk_rand_scale(scl, 3)
 end
 puts scales_arr
@@ -77,7 +83,7 @@ live_loop :whisper do
   notes = scales_arr.choose
 
   puts "Transmission sequence: #{notes}"
-  slp = [[3,3,2], [4,4,2], [6,6,3], [8,8,4]].choose.ring
+  slp = [[3,3,2], [4,2,2], [8,4,4], [8,6,2]].choose.ring
   # slp = [[3,3,2], [4,4,2], [2,3,3], [3,2,2]].choose.ring
 
   (slp.size * 2).times do
@@ -86,7 +92,7 @@ live_loop :whisper do
     puts "Whisper Amp Mod: #{phase}}"
     with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
       with_fx :slicer, mix: rrand(0.2, 0.5), smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-        play notes.look, amp: 0.35, attack: att, sustain: sus, release: rel, cutoff: 85
+        play notes.look, amp: 0.4, attack: att, sustain: sus, release: rel, cutoff: 85
         sleep slp.look
       end
     end
@@ -116,7 +122,9 @@ live_loop :throb do
     with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
       play notes, amp: 0.125, release: slp+2, cutoff: 80
       sleep slp*0.5
-      cue :d_harp
+      if multi == 2 && one_in(2)
+        cue :d_harp
+      end
       sleep slp*0.5
     end
   end
@@ -129,7 +137,7 @@ end
 
 
 live_loop :doombeat do
-  sample :loop_industrial, beat_stretch: 2, amp: 0.2, cutoff: 85
+  sample :loop_industrial, beat_stretch: 2, amp: 0.2, cutoff: 75
   sleep 2
 end
 
