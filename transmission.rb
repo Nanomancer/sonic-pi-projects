@@ -1,4 +1,4 @@
-## Transmission - Origin Unknown -Tuned Resonators & ring mod in C minor
+## Codewave_0.2 -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
 #######################
@@ -27,7 +27,6 @@ use_random_seed SEED # 746742 # 100
 
 ################ FUNCTIONS ########################
 
-
 define :stopwatch do |int, max, fade|
   ## interval in seconds(just for log timer), max in mins, fade in secs
   count = 0
@@ -48,12 +47,6 @@ define :stopwatch do |int, max, fade|
       end
     end
   end
-end
-
-define :autosync do |id, num = 0|
-  tick(:as)
-  puts "Liveloop ID: #{id} | No: #{look(:as)}"
-  return sync id if look(:as) == num
 end
 
 define :autocue do |id, time|
@@ -79,35 +72,31 @@ in_thread do
   stopwatch(15, max_t, max_t*60*0.1)
 end
 
+
 ##############  BASS  #########################
 
-live_loop :pulsar do
+live_loop :pulsar, sync: :pulse, auto_cue: false do
+
   use_synth :growl
-  autosync(:pulse)
   autostop(rrand max_t*0.75, max_t) # (rrand_i 5, 8)
   puts "Pulsar"
-
-  # cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
-  #notes = (knit :c3, 4, :ds3, 1, :b2, 1)
-  #notes = (knit :c3, 2, :ds3, 1, :c3, 2, :b2, 1)
   notes = (knit :c3, 2, :ds3, 1, :c3, 1)
+
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     notes.size.times do
       cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
-      play notes.tick, amp: 0.19, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
+      play notes.tick, amp: 0.2, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
     end
   end
-  if one_in 3
-    sleep [8, 16, 24].choose
-  end
+  if one_in 3 then sleep [8, 16, 24].choose end
 end
 
-############## TUNED RESONATED DRONE  #########################
-cue :drn
 
-live_loop :drone do
-  autosync(:drn)
+############## TUNED RESONATED DRONE  #########################
+
+live_loop :drone, auto_cue: false do
+
   autostop(max_t) #(rrand_i 6, 8)
   autocue(:prb, (rrand 0, max_t*0.3))
   autocue(:pulse, (rrand 0, max_t*0.4))
@@ -115,12 +104,12 @@ live_loop :drone do
   autocue(:trans, (rrand max_t*0.2, max_t*0.5))
 
   scl = scale(:c5, :harmonic_minor, num_octaves: 1)[0..4]
-  # scl = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2)
+
   notes = mk_rand_scale(scl, 4)
 
   puts "Drone sequence: #{notes}"
-  #  (notes.size * 2).times do
-  notes.size * 2.times do
+
+  notes.size.times do
     frq = midi_to_hz(notes.tick)
     del = (1.0 / frq)# * 2
     with_fx :echo, amp: 1, mix: 1, phase: del, decay: 2 do
@@ -130,16 +119,15 @@ live_loop :drone do
   end
 end
 
+
 ##############  TUNED RESONATED HUM  #########################
 
-live_loop :probe do
-  autosync(:prb)
+live_loop :probe, sync: :prb, auto_cue: false do
+
   autostop(rrand max_t*0.7, max_t)
-  #notes = chord([:c1, :c2, :c3].choose, :minor, num_octaves: 2).shuffle
-  #notes = scale(:c4, :harmonic_minor, num_octaves: 1).shuffle
+
   notes = (ring 60, 62, 63, 65, 68, 71, 72).shuffle
   puts "Probe sequence: #{notes}"
-
   vol = 0.8
 
   4.times do
@@ -172,7 +160,7 @@ end
 
 ##############  TUNED RINGMOD / SYNTH  #########################
 
-# sprd_arr = [3,4,5,6,7,8].shuffle
+
 scales_arr = []
 2.times do
   scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
@@ -180,20 +168,15 @@ scales_arr = []
 end
 puts scales_arr
 
-live_loop :transmission do
-  use_synth :blade
+live_loop :transmission, sync: :trans, auto_cue: false do
 
-  autosync(:trans)
+  use_synth :blade
   autostop(rrand max_t*0.8, max_t) # (rrand_i 5, 7)
   chd = chord(:c1, :minor, num_octaves: 2).shuffle
-  scl = scale([:c4, :c5, :c6].choose, :harmonic_minor, num_octaves: 1)
-
-  # notes = mk_rand_scale(scl, 3)
   notes = scales_arr.choose
 
   puts "Transmission sequence: #{notes}"
   slp = [[3,3,2], [4,4,2], [6,6,3], [8,8,4]].choose.ring
-  # slp = [[3,3,2], [4,4,2], [2,3,3], [3,2,2]].choose.ring
 
   (slp.size * 2).times do
     att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
@@ -212,15 +195,17 @@ live_loop :transmission do
   sleep [4, 8, 12, 16, 20, 32].choose
 end
 
-live_loop :static do
+
+live_loop :static, sync: :stc, auto_cue: false do
+
   use_synth :bnoise
-  autosync(:stc)
   autostop(rrand max_t*0.6, max_t)
   scl = scale(:c2, :harmonic_minor, num_octaves: 2).choose
   mod_frq = midi_to_hz(scl)
   phs = [0.125, 0.5, 0.25, 0.75, 1].choose
   len = [6, 8, 10, 12, 16, 24].choose
   puts "Static - AM: #{phs} | Len: #{len}"
+
   with_fx :hpf, cutoff: 60 do
     with_fx :ring_mod, freq: mod_frq do
       with_fx :slicer, smooth_up: phs*0.25, mix: rrand(0.3,0.9), phase: phs do
@@ -236,9 +221,6 @@ live_loop :static do
       end
     end
   end
-  if len <= 6
-    sleep 2
-  else
-    sleep [10, 16, 20, 24].choose
-  end
+  if len <= 6 then sleep(2)
+  else sleep [10, 16, 20, 24].choose end
 end
