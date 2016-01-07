@@ -1,4 +1,4 @@
-## Transmission - Origin Unknown -Tuned Resonators in C minor
+## Transmission - Origin Unknown -Tuned Resonators & ring mod in C minor
 ## Coded by Nanomancer
 
 #######################

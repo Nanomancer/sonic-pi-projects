@@ -1,3 +1,5 @@
+## Bitstream - Coded by Nanomancer
+
 set_volume! 5
 epoch_seed = Time.now.usec
 puts epoch_seed
