@@ -1,4 +1,4 @@
-## Codewave_0.2 -Tuned Resonators in C minor
+## Transmission - Origin Unknown -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
 #######################
