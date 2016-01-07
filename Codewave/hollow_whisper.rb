@@ -120,6 +120,8 @@ live_loop :throb do
       sleep slp*0.5
       if multi == 2 && one_in(2)
         cue :d_harp
+      elsif multi == 1 && one_in(3) && look % 2 == 0
+        cue :d_harp
       end
       sleep slp*0.5
     end
