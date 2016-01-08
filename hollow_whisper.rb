@@ -6,13 +6,13 @@ use_random_seed Time.now.usec
 
 define :varichord do |chord_arr, vol, len=8|
 
-  play chord_arr[0], amp: vol*rrand(0.8, 1.2),
+  play chord_arr[0], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.5, 0.8), sustain: len*rrand(0.25, 0.6),
     release: len*rrand(0.5, 0.8), cutoff: rrand(75,110), pan: -0.5
-  play chord_arr[1], amp: vol*rrand(0.8, 1.2),
+  play chord_arr[1], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.4, 0.7), sustain: len*rrand(0.25, 0.6),
     release: len*rrand(0.4, 0.7), cutoff: rrand(75,110)
-  play chord_arr[2], amp: vol*rrand(0.8, 1.2),
+  play chord_arr[2], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.3, 0.6), sustain: len*rrand(0.25, 0.6),
     release: len*rrand(0.3, 0.6), cutoff: rrand(75,110), pan: 0.5
   # play chord_arr[3], amp: vol*rrand(0.8, 1.2),
@@ -69,7 +69,7 @@ end
 ############ GENERATE WHISPER SEQUENCE  ##############
 
 scales_arr = []
-2.times do
+3.times do
   scl = scale([:a3, :a4].choose, :hungarian_minor, num_octaves: 2)
   scales_arr << mk_rand_scale(scl, 4)
 end
@@ -106,14 +106,12 @@ end
 
 ################  DARKHARP HIT ################
 
-live_loop :darkharp do
+live_loop :darkharp, auto_cue: false do
 
   sync :d_harp
   use_synth :zawa
 
-  # chords2 = (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
   chords2 = (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
-
              :A3, :hungarian_minor, 2)
 
   with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
@@ -138,8 +136,7 @@ live_loop :throb do
   elsif one_in 2 then multi = 0.5
   else multi = 1 end
   # multi = 0.5
-  rst, rst_harp = one_in(4), one_in(4)
-
+  rst, rst_harp = one_in(4), one_in(6)
 
   cue :a_pad, multi: multi
 
@@ -161,7 +158,7 @@ end
 ###############  DRUMS 1  ################
 
 live_loop :doombeat do
-  if one_in(2) then sleep [16, 32, 64].choose end
+  if one_in(3) then sleep [16, 32, 64].choose end
   16.times do
     sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: 75
     sleep 2
