@@ -123,16 +123,16 @@ live_loop :darkharp, auto_cue: false do
   use_synth :zawa
 
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
-  puts "Darkharp hit degree: #{map[:degree]}"
+  puts "Darkharp degree: #{map[:degree]}"
 
   with_fx :echo, mix: 0.4, phase: [1.5, 0.75].choose, decay: 10 do
     with_fx :reverb, mix: 0.8, room: 0.6, amp: 0.3 do
       # chords2.size.times do
       2.times do
         note1 = [0, 1].choose
-        note2 = note1 + [2,3].choose
+        note2 = note1 + [1,2,3].choose
         oct = [12, -12].choose
-        puts "Darkharp notes- 1: #{note1} oct: #{oct}| 2: #{note2}"
+        puts "Darkharp notes- 1: #{note1+1} oct: #{oct}| 2: #{note2+1}"
         play chords2[note1]+oct, amp: 0.09, attack: 0.06, release: 1.25,
           cutoff: rdist(3, 95)
         sleep 0.25
