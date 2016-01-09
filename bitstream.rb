@@ -153,29 +153,30 @@ end
 puts scales_arr
 
 live_loop :crystal_entity do
-  use_synth :blade
 
   notes = scales_arr.choose
 
-  sprd1 = sprd_arr[0..8].choose
+  sprd1 = sprd_arr[0..4].choose
   rtm_arr = (spread sprd1, 8)
+  use_synth :dark_ambience
   2.times do
-    4.times do
+    slp = [0.25, 0.5, 1].choose
+    2.times do
       tick_reset(:rtm)
       tick_reset
       8.times do
         if rtm_arr.look(:rtm)
 
           if sprd1 <= 2
-            with_fx :echo, mix: 0.4, phase: [0.75, 1.5, 3].choose, decay: 8 do
-              play note notes.tick, amp: 0.05
+            with_fx :echo, mix: 0.001, phase: [0.75, 1.5, 3].choose, decay: 8 do
+              play notes.tick, amp: 0.005
             end
           else
-            play note notes.tick, amp: 0.05
+            play notes.tick, amp: 0.9, release: 1
           end
         end
         tick(:rtm)
-        sleep 0.25#[0.125, 0.25, 0.5].choose
+        sleep slp
       end
     end
     if one_in 3
