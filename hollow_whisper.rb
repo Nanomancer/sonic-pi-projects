@@ -53,7 +53,7 @@ live_loop :ambipad do
     chords2 = (chord_invert (chord_degree [:i, [:vii, :v].choose, :i].ring.look,
 
                              :A2, :hungarian_minor, 3), rrand_i(0,3))
-    puts "Chord: #{chords2} | length: #{len}"
+    puts "Ambipad: #{chords2} | length: #{len}"
 
     # if map[:multi] == 1 then len = [6, 2, 4, 2, 2].ring.look
     # elsif map[:multi] == 0.5 then len = [6, 2, 4, 2, 2].ring.look * 0.5
