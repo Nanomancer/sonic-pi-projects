@@ -102,14 +102,14 @@ live_loop :whisper do
       phase = [0.25, 0.5, 0.75, 1].choose
       with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
         with_fx :slicer, mix: rrand(0.2, 0.5), smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-          # play notes.look, amp: 0.4, attack: att, sustain: sus, release: rel, cutoff: 85 # unless one_in(3)
+          play notes.look, amp: 0.4, attack: att, sustain: sus, release: rel, cutoff: 85 # unless one_in(3)
           sleep slp.look
         end
       end
     end
-    # sleep 8
+    sleep 8
   end
-  # if one_in(3) then sleep [8, 16, 32].choose end
+  if one_in(3) then sleep [8, 16, 32].choose end
 end
 
 
@@ -125,12 +125,13 @@ live_loop :darkharp, auto_cue: false do
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
   puts "Darkharp degree: #{map[:degree]}"
 
-  # with_fx :echo, mix: 0.4, phase: [1.5, 0.75].choose, decay: 10 do
-  with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
+  if map[:multi] == 2 then slp = [0.25,0.5].choose
+  else slp = 0.25
+  end
 
-    with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.5 do
-      # chords2.size.times do
-      slp = [0.25,0.5].choose
+  with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
+    with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.35 do
+
       dice(2).times do
         note1 = [0, 1].choose
         if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
@@ -139,8 +140,8 @@ live_loop :darkharp, auto_cue: false do
         elsif map[:degree] == :iii && note1 == 1 then note2 = note1 + [1,2,4].choose
 
         elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,2,4].choose
-        elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose end
-
+        elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose
+        end
 
         oct = [12, -12].choose
         puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
@@ -161,28 +162,31 @@ end
 live_loop :throb do
 
   use_synth :prophet
-  # if one_in 4 then multi = 2
-  # elsif one_in 2 then multi = 0.5
-  # else multi = 1 end
-  multi = 2
-  rst, rst_harp = one_in(4), one_in(60000000)
+  if one_in 4 then multi = 2
+  elsif one_in 2 then multi = 0.5
+  else multi = 1
+  end
+  # multi = 1
+  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6)
 
   cue :a_pad, multi: multi
 
   12.times do
-    # notes = (degree [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick, :A1, :hungarian_minor)
+
     deg = [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick
     # puts "Bass degree: #{deg}"
     notes = (degree deg, :A1, :hungarian_minor)
+    slp = [4,2,2].ring.look * multi
 
-
-    slp = [4,2,2].ring.look
-    slp = slp*multi
     with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
-      play notes, amp: 0.13, release: slp+2, cutoff: 80 unless rst == true
+      play notes, amp: 0.13, release: slp+2, cutoff: 80 unless rst
       sleep slp*0.5
-      if multi == 2 && one_in(1) && rst_harp == false then cue :d_harp, degree: deg# 3
-      elsif multi == 1 && one_in(1) && rst_harp == false then cue :d_harp, degree: deg end # 8
+      unless no_rest && multi == 2
+        if multi == 2 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg, multi: multi# 3
+        elsif multi == 1 && one_in(5) && rst_harp == false then cue :d_harp, degree: deg
+        end
+      else cue :d_harp, degree: deg
+      end
       sleep slp*0.5
     end
   end
