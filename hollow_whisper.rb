@@ -53,7 +53,7 @@ live_loop :ambipad do
     chords2 = (chord_invert (chord_degree [:i, [:vii, :v].choose, :i].ring.look,
 
                              :A2, :hungarian_minor, 3), rrand_i(0,3))
-    puts "Ambipad: #{chords2} | length: #{len}"
+    # puts "Ambipad: #{chords2} | length: #{len}"
 
     # if map[:multi] == 1 then len = [6, 2, 4, 2, 2].ring.look
     # elsif map[:multi] == 0.5 then len = [6, 2, 4, 2, 2].ring.look * 0.5
@@ -102,7 +102,7 @@ live_loop :whisper do
       phase = [0.25, 0.5, 0.75, 1].choose
       with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
         with_fx :slicer, mix: rrand(0.2, 0.5), smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-          play notes.look, amp: 0.4, attack: att, sustain: sus, release: rel, cutoff: 85 # unless one_in(3)
+          # play notes.look, amp: 0.4, attack: att, sustain: sus, release: rel, cutoff: 85 # unless one_in(3)
           sleep slp.look
         end
       end
@@ -125,18 +125,20 @@ live_loop :darkharp, auto_cue: false do
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
   puts "Darkharp degree: #{map[:degree]}"
 
-  with_fx :echo, mix: 0.4, phase: [1.5, 0.75].choose, decay: 10 do
-    with_fx :reverb, mix: 0.8, room: 0.6, amp: 0.3 do
+  # with_fx :echo, mix: 0.4, phase: [1.5, 0.75].choose, decay: 10 do
+  with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
+
+    with_fx :reverb, mix: 0.8, room: 0.6, amp: 0.5 do
       # chords2.size.times do
       2.times do
-        note1 = [0, 1].choose
-        note2 = note1 + [1,2,3].choose
+        note1 = 0#[0, 1].choose
+        note2 = note1 + 4 # [1,2,3].choose
         oct = [12, -12].choose
-        puts "Darkharp notes- 1: #{note1+1} oct: #{oct}| 2: #{note2+1}"
-        play chords2[note1]+oct, amp: 0.09, attack: 0.06, release: 1.25,
+        puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
+        play chords2[note1]+oct, amp: 0.1, attack: 0.06, release: 1.25,
           cutoff: rdist(3, 95)
         sleep 0.25
-        play chords2[note2], amp: 0.09, attack: 0.06, release: 1.5,
+        play chords2[note2], amp: 0.1, attack: 0.06, release: 1.5,
           cutoff: rdist(3, 95)
         sleep 0.25
       end
@@ -150,18 +152,18 @@ end
 live_loop :throb do
 
   use_synth :prophet
-  if one_in 4 then multi = 2
-  elsif one_in 2 then multi = 0.5
-  else multi = 1 end
-  # multi = 0.5
-  rst, rst_harp = one_in(4), one_in(600000)
+  # if one_in 4 then multi = 2
+  # elsif one_in 2 then multi = 0.5
+  # else multi = 1 end
+  multi = 2
+  rst, rst_harp = one_in(4), one_in(60000000)
 
   cue :a_pad, multi: multi
 
   12.times do
     # notes = (degree [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick, :A1, :hungarian_minor)
     deg = [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick
-    puts "Bass degree: #{deg}"
+    # puts "Bass degree: #{deg}"
     notes = (degree deg, :A1, :hungarian_minor)
 
 
