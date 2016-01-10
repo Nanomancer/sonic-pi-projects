@@ -128,19 +128,28 @@ live_loop :darkharp, auto_cue: false do
   # with_fx :echo, mix: 0.4, phase: [1.5, 0.75].choose, decay: 10 do
   with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
 
-    with_fx :reverb, mix: 0.8, room: 0.6, amp: 0.5 do
+    with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.5 do
       # chords2.size.times do
-      2.times do
-        note1 = 0#[0, 1].choose
-        note2 = note1 + 4 # [1,2,3].choose
+      slp = [0.25,0.5].choose
+      dice(2).times do
+        note1 = [0, 1].choose
+        if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
+        elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
+        elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
+        elsif map[:degree] == :iii && note1 == 1 then note2 = note1 + [1,2,4].choose
+
+        elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,2,4].choose
+        elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose end
+
+
         oct = [12, -12].choose
         puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
         play chords2[note1]+oct, amp: 0.1, attack: 0.06, release: 1.25,
           cutoff: rdist(3, 95)
-        sleep 0.25
+        sleep slp
         play chords2[note2], amp: 0.1, attack: 0.06, release: 1.5,
           cutoff: rdist(3, 95)
-        sleep 0.25
+        sleep slp
       end
     end
   end
