@@ -122,7 +122,10 @@ live_loop :darkharp, auto_cue: false do
   end
   # slp = 0.75
   note1 = [0, 1].choose
-  reps = dice(2)
+  if one_in(3) then reps = 1
+  else reps = 2
+  end
+
   if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
   elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
   elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
