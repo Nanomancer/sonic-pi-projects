@@ -3,9 +3,9 @@
 set_volume! 5
 rseed = Time.now.usec
 use_random_seed rseed
-# File.open('/home/user/Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
-#   f.puts("Seed: #{rseed}")
-# end
+File.open('/home/user/Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
+  f.puts("Seed: #{rseed}")
+end
 # 750286
 puts "Seed: #{rseed}"
 
@@ -15,13 +15,13 @@ define :varichord do |chord_arr, vol, len=8|
 
   play chord_arr[0], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.5, 0.8), sustain: len*rrand(0.25, 0.6),
-    release: len*rrand(0.5, 0.8), cutoff: rrand(75,110), pan: -0.5
+    release: len*rrand(0.5, 0.8), cutoff: rrand(75,110), pan: -1
   play chord_arr[1], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.4, 0.7), sustain: len*rrand(0.25, 0.6),
     release: len*rrand(0.4, 0.7), cutoff: rrand(75,110)
   play chord_arr[2], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.3, 0.6), sustain: len*rrand(0.25, 0.6),
-    release: len*rrand(0.3, 0.6), cutoff: rrand(75,110), pan: 0.5
+    release: len*rrand(0.3, 0.6), cutoff: rrand(75,110), pan: 1
   # play chord_arr[3], amp: vol*rrand(0.8, 1.2),
   #   attack: len*rrand(0.3, 0.6), sustain: len*rrand(0.25, 0.5),
   #   release: len*rrand(0.3, 0.6), cutoff: rrand(75,110), pan: 0.5
@@ -38,8 +38,8 @@ end
 
 define :bass_cueharp do |no_rest, rst_harp, deg, multi|
   unless no_rest && multi == 2
-    if multi == 2 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg, multi: multi# 3
-    elsif multi == 1 && one_in(5) && rst_harp == false then cue :d_harp, degree: deg
+    if multi == 2 && one_in(2) && rst_harp == false then cue :d_harp, degree: deg, multi: multi# 3
+    elsif multi == 1 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg
     end
   else cue :d_harp, degree: deg
   end
@@ -53,23 +53,9 @@ live_loop :ambipad do
 
   3.times do
     len = [8, 8, 16].ring.tick
-    # len = map[:slp]#[6, 2, 4, 2, 2].ring.look
-    # chords2 = (chord_invert (chord_degree [:i, :vii, :i, :iii, :vii].ring.tick,
-    #                          :A2, :hungarian_minor, 3), rrand_i(0,3))
-    # chords2 = (chord_invert (chord_degree [:i, :v, :i, :vii ].ring.tick,
     chords2 = (chord_invert (chord_degree [:i, [:vii, :v].choose, :i].ring.look,
-
                              :A2, :hungarian_minor, 3), rrand_i(0,3))
     # puts "Ambipad: #{chords2} | length: #{len}"
-
-    # if map[:multi] == 1 then len = [6, 2, 4, 2, 2].ring.look
-    # elsif map[:multi] == 0.5 then len = [6, 2, 4, 2, 2].ring.look * 0.5
-    # elsif map[:multi] == 2 then len = [6, 2].ring.look
-    #   chords2 = (chord_invert (chord_degree [:i, :vii].ring.tick,
-    #                            :A2, :hungarian_minor, 3), rrand_i(0,3))
-    # end
-    # chords2 = (chord_invert (chord_degree [:i, :i, :vii, :i, :iii, :vii].ring.tick,
-    # :A2, :hungarian_minor, 3), rrand_i(0,3))
 
     with_fx :reverb, mix: 0.6 do
       varichord(chords2, 0.35, len)
@@ -99,9 +85,8 @@ live_loop :whisper do
   # autostop(rrand max_t*0.8, max_t) # (rrand_i 5, 7)
 
   notes = scales_arr.choose
-  # slp = [[2,1.5,0.5,4]].choose.ring
-  # slp = [[2,2], [2,2,4], [4,4,8], [4,4]].choose.ring
   slp = [[2,2,4], [2,2], [4,4,8], [4,4], [2,1.5,0.5,4]].choose.ring
+
   2.times do
     tick_reset
     slp.size.times do
@@ -143,7 +128,7 @@ live_loop :darkharp, auto_cue: false do
   elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
   elsif map[:degree] == :iii && note1 == 1 then note2 = note1 + [1,2,4].choose
 
-  elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,2,4].choose
+  elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,4].choose
   elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose
   end
   with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
@@ -152,9 +137,9 @@ live_loop :darkharp, auto_cue: false do
 
         oct = [12, -12].choose
         puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
-        play chords2[note1]+oct, amp: 0.1, attack: 0.06, release: 1.25, cutoff: rdist(3, 95), pan: 1
+        play chords2[note1]+oct, amp: 0.1, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
         sleep slp
-        play chords2[note2], amp: 0.1, attack: 0.06, release: 1.5, cutoff: rdist(3, 95), pan: -1
+        play chords2[note2], amp: 0.1, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
         sleep slp
       end
     end
@@ -172,7 +157,7 @@ live_loop :throb do
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6)
+  rst, rst_harp, no_rest = one_in(4), one_in(8000000), one_in(6)
   slp = [4,2,2].ring
 
   cue :a_pad, multi: multi
@@ -183,19 +168,20 @@ live_loop :throb do
       deg1_reps.times do
 
         # deg = [[:i, :viii].ring.tick(:oct), :i, :vii, :i, :iii, :vii].ring.tick
-        deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii]
+        deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii].ring.tick
 
-        # puts "Bass degree: #{deg}"
-        play (degree deg1.ring.tick, :A1, :hungarian_minor), amp: 0.13, release: slp.tick(:slp)*multi*1.25, cutoff: 80 unless rst
+        play (degree deg1, :A1, :hungarian_minor), amp: 0.13, attack: rdist(0.01, 0.02), release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1), cutoff: rdist(2.1, 80) unless rst
+        puts "Bass degree: #{deg1}"
         sleep slp.look(:slp) *0.5*multi
-        bass_cueharp(no_rest, rst_harp, deg1.ring.look, multi)
+        bass_cueharp(no_rest, rst_harp, deg1, multi)
         sleep slp.look(:slp) *0.5*multi
       end
       3.times do
-        deg2 = [:i, :iii, :vii]
-        play (degree deg2.ring.tick, :A1, :hungarian_minor), amp: 0.13, release: slp.tick(:slp)*multi*1.25, cutoff: 80 unless rst
+        deg2 = [:i, :iii, :vii].ring.tick
+        play (degree deg2, :A1, :hungarian_minor), amp: 0.13, attack: rdist(0.01, 0.02), release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1), cutoff: rdist(2.1, 80) unless rst
+        puts "Bass degree: #{deg2}"
         sleep slp.look(:slp) *0.5*multi
-        bass_cueharp(no_rest, rst_harp, deg2.ring.look, multi)
+        bass_cueharp(no_rest, rst_harp, deg2, multi)
         sleep slp.look(:slp) *0.5*multi
       end
     end
