@@ -3,7 +3,7 @@
 set_volume! 5
 rseed = Time.now.usec
 use_random_seed rseed
-File.open('/home/user/Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
+File.open('/home/james/Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
   f.puts("Seed: #{rseed}")
 end
 # 750286
@@ -117,12 +117,12 @@ live_loop :darkharp, auto_cue: false do
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
   puts "Darkharp degree: #{map[:degree]}"
 
-  if map[:multi] == 2 then slp = [0.25,0.5].choose
+  if map[:multi] == 2 then slp = [0.25,0.5,0.75].choose
   else slp = 0.25
   end
-
+  # slp = 0.75
   note1 = [0, 1].choose
-
+  reps = dice(2)
   if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
   elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
   elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
@@ -132,8 +132,8 @@ live_loop :darkharp, auto_cue: false do
   elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose
   end
   with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
-    with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.35 do
-      dice(2).times do
+    with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.5 do
+      reps.times do
 
         oct = [12, -12].choose
         puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
