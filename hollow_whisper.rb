@@ -3,10 +3,10 @@
 set_volume! 5
 rseed = Time.now.usec
 use_random_seed rseed
-File.open('/home/james/Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
+File.open('Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
   f.puts("Seed: #{rseed}")
 end
-# 750286
+# 236249
 puts "Seed: #{rseed}"
 
 ############ DEFINE FUNCTIONS #################
@@ -43,6 +43,14 @@ define :bass_cueharp do |no_rest, rst_harp, deg, multi|
     end
   else cue :d_harp, degree: deg
   end
+end
+
+define :bass_patt do |rst, no_rest, rst_harp, deg, multi, slp|
+  play (degree deg, :A1, :hungarian_minor), amp: 0.13, attack: rdist(0.01, 0.02), release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1), cutoff: rdist(2.1, 80) unless rst
+  puts "Bass degree: #{deg}"
+  sleep slp.look(:slp) *0.5*multi
+  bass_cueharp(no_rest, rst_harp, deg, multi)
+  sleep slp.look(:slp) *0.5*multi
 end
 #############  PAD  ###############
 
@@ -170,22 +178,13 @@ live_loop :throb do
     2.times do
       deg1_reps.times do
 
-        # deg = [[:i, :viii].ring.tick(:oct), :i, :vii, :i, :iii, :vii].ring.tick
         deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii].ring.tick
-
-        play (degree deg1, :A1, :hungarian_minor), amp: 0.13, attack: rdist(0.01, 0.02), release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1), cutoff: rdist(2.1, 80) unless rst
-        puts "Bass degree: #{deg1}"
-        sleep slp.look(:slp) *0.5*multi
-        bass_cueharp(no_rest, rst_harp, deg1, multi)
-        sleep slp.look(:slp) *0.5*multi
+        bass_patt(rst, no_rest, rst_harp, deg1, multi, slp)
       end
+  
       3.times do
         deg2 = [:i, :iii, :vii].ring.tick
-        play (degree deg2, :A1, :hungarian_minor), amp: 0.13, attack: rdist(0.01, 0.02), release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1), cutoff: rdist(2.1, 80) unless rst
-        puts "Bass degree: #{deg2}"
-        sleep slp.look(:slp) *0.5*multi
-        bass_cueharp(no_rest, rst_harp, deg2, multi)
-        sleep slp.look(:slp) *0.5*multi
+        bass_patt(rst, no_rest, rst_harp, deg2, multi, slp)
       end
     end
   end
