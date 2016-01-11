@@ -6,7 +6,7 @@ use_random_seed rseed
 # File.open('/home/user/Copy/sonic_pi/whisper_seeds.txt', 'a+') do |f|
 #   f.puts("Seed: #{rseed}")
 # end
-
+# 750286
 puts "Seed: #{rseed}"
 
 ############ DEFINE FUNCTIONS #################
@@ -36,7 +36,14 @@ define :mk_rand_scale do |scale, len = 8|
   return rand_s.ring
 end
 
-
+define :bass_cueharp do |no_rest, rst_harp, deg, multi|
+  unless no_rest && multi == 2
+    if multi == 2 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg, multi: multi# 3
+    elsif multi == 1 && one_in(5) && rst_harp == false then cue :d_harp, degree: deg
+    end
+  else cue :d_harp, degree: deg
+  end
+end
 #############  PAD  ###############
 
 live_loop :ambipad do
@@ -78,7 +85,7 @@ end
 scales_arr = []
 2.times do
   scl = scale(:a3, :hungarian_minor, num_octaves: 2)
-  scales_arr << mk_rand_scale(scl, 4)
+  scales_arr << mk_rand_scale(scl, 3)
 end
 puts scales_arr
 
@@ -129,27 +136,25 @@ live_loop :darkharp, auto_cue: false do
   else slp = 0.25
   end
 
+  note1 = [0, 1].choose
+
+  if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
+  elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
+  elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
+  elsif map[:degree] == :iii && note1 == 1 then note2 = note1 + [1,2,4].choose
+
+  elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,2,4].choose
+  elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose
+  end
   with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
     with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.35 do
-
       dice(2).times do
-        note1 = [0, 1].choose
-        if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
-        elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
-        elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
-        elsif map[:degree] == :iii && note1 == 1 then note2 = note1 + [1,2,4].choose
-
-        elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,2,4].choose
-        elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose
-        end
 
         oct = [12, -12].choose
         puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
-        play chords2[note1]+oct, amp: 0.1, attack: 0.06, release: 1.25,
-          cutoff: rdist(3, 95)
+        play chords2[note1]+oct, amp: 0.1, attack: 0.06, release: 1.25, cutoff: rdist(3, 95), pan: 1
         sleep slp
-        play chords2[note2], amp: 0.1, attack: 0.06, release: 1.5,
-          cutoff: rdist(3, 95)
+        play chords2[note2], amp: 0.1, attack: 0.06, release: 1.5, cutoff: rdist(3, 95), pan: -1
         sleep slp
       end
     end
@@ -166,33 +171,36 @@ live_loop :throb do
   elsif one_in 2 then multi = 0.5
   else multi = 1
   end
-  # multi = 1
+  # multi = 2
   rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6)
+  slp = [4,2,2].ring
 
   cue :a_pad, multi: multi
+  deg1_reps = [3,9].choose
 
-  12.times do
+  with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
+    2.times do
+      deg1_reps.times do
 
-    deg = [[:i, :viii].ring.look, :i, :vii, :i, :iii, :vii].ring.tick
-    # puts "Bass degree: #{deg}"
-    notes = (degree deg, :A1, :hungarian_minor)
-    slp = [4,2,2].ring.look * multi
+        # deg = [[:i, :viii].ring.tick(:oct), :i, :vii, :i, :iii, :vii].ring.tick
+        deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii]
 
-    with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
-      play notes, amp: 0.13, release: slp+2, cutoff: 80 unless rst
-      sleep slp*0.5
-      unless no_rest && multi == 2
-        if multi == 2 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg, multi: multi# 3
-        elsif multi == 1 && one_in(5) && rst_harp == false then cue :d_harp, degree: deg
-        end
-      else cue :d_harp, degree: deg
+        # puts "Bass degree: #{deg}"
+        play (degree deg1.ring.tick, :A1, :hungarian_minor), amp: 0.13, release: slp.tick(:slp)*multi*1.25, cutoff: 80 unless rst
+        sleep slp.look(:slp) *0.5*multi
+        bass_cueharp(no_rest, rst_harp, deg1.ring.look, multi)
+        sleep slp.look(:slp) *0.5*multi
       end
-      sleep slp*0.5
+      3.times do
+        deg2 = [:i, :iii, :vii]
+        play (degree deg2.ring.tick, :A1, :hungarian_minor), amp: 0.13, release: slp.tick(:slp)*multi*1.25, cutoff: 80 unless rst
+        sleep slp.look(:slp) *0.5*multi
+        bass_cueharp(no_rest, rst_harp, deg2.ring.look, multi)
+        sleep slp.look(:slp) *0.5*multi
+      end
     end
   end
 end
-
-
 ###############  DRUMS 1  ################
 
 live_loop :doombeat do
