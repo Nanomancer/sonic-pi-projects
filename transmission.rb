@@ -1,4 +1,4 @@
-## Codewave_0.2 -Tuned Resonators in C minor
+## Transmission - Origin Unknown -Tuned Resonators in C minor
 ## Coded by Nanomancer
 
 #######################
@@ -212,7 +212,7 @@ live_loop :static, sync: :stc, auto_cue: false do
         with_fx :reverb, mix: 0.5, room: 0.6 do
           cut = rrand(60, 120)
           amt = rrand(60, 120) # cut + (rrand 0, 40)
-          s = play :c4, amp: 0.04, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
+          s = play :c4, amp: 0.03, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
           control s, cutoff: amt
           sleep len*0.5
           control s, cutoff: cut

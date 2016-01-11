@@ -167,7 +167,7 @@ live_loop :throb do
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(8000000), one_in(6)
+  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6)
   slp = [4,2,2].ring
 
   cue :a_pad, multi: multi
