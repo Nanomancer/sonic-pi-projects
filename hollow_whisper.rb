@@ -6,7 +6,7 @@
 # key change start with bass
 # sustained zawa for faster bass section?
 # whisper melodic generation - non random solution required
-# 
+#
 
 #########################
 
@@ -143,8 +143,8 @@ live_loop :darkharp, auto_cue: false do
   else reps = 2
   end
 
-  if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
-  elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
+  if (map[:degree] == :i || map[:degree] == :viii) && note1 == 0 then note2 = note1 + [1,2,4].choose
+  elsif (map[:degree] == :i || map[:degree] == :viii) && note1 == 1 then note2 = note1 + [1,4].choose
   elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
   elsif map[:degree] == :iii && note1 == 1 then note2 = note1 + [1,2,4].choose
 
@@ -161,11 +161,13 @@ live_loop :darkharp, auto_cue: false do
       reps.times do
 
         oct = [12, -12].choose
-        puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
+        puts "Darkharp notes- N1= #{note1} - N2= #{note2}"
         play chords2[note1]+oct, amp: 0.1, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
         sleep slp
         play chords2[note2], amp: 0.1, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
         sleep slp
+        # note1 += 1
+        # note2 += 1
       end
     end
   end
