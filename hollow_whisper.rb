@@ -124,8 +124,8 @@ live_loop :darkharp, auto_cue: false do
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
   puts "Darkharp degree: #{map[:degree]}"
 
-  if map[:multi] == 2 then slp = [0.25,0.5,0.75].choose
-  else slp = 0.25
+  if map[:multi] == 2 then slp = [0.5,0.75].choose
+  else slp = [0.25, 0.5].choose
   end
   # slp = 0.75
   note1 = [0, 1].choose
@@ -141,7 +141,12 @@ live_loop :darkharp, auto_cue: false do
   elsif map[:degree] == :vii && note1 == 0 then note2 = note1 + [1,4].choose
   elsif map[:degree] == :vii && note1 == 1 then note2 = note1 + [3,4].choose
   end
-  with_fx :echo, mix: 0.4, phase: 1.5, decay: 10 do
+
+  if slp == 0.75 then del = dice(2)
+  else del = 1.5
+  end
+
+  with_fx :echo, mix: 0.4, phase: del, decay: 10 do
     with_fx :reverb, mix: 0.7, room: 0.6, amp: 0.5 do
       reps.times do
 
