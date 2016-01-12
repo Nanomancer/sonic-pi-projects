@@ -1,5 +1,15 @@
 ## Hollow Whisper - Coded by Nanomancer
 
+######## to do: #########
+
+# drums / perc - add subtle cymbal, reverse ride into forward? create loop using generators?
+# key change start with bass
+# sustained zawa for faster bass section?
+# whisper melodic generation - non random solution required
+# 
+
+#########################
+
 set_volume! 5
 rseed = Time.now.usec
 use_random_seed rseed
