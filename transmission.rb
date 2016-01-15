@@ -84,7 +84,7 @@ live_loop :pulsar, sync: :pulse, auto_cue: false do
 
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     notes.size.times do
-      cut = [55, 60, 65, 70, 75, 80, 85, 80, 75, 70, 65, 60].ring.tick(:cut)
+      cut = range(55, 85, step: 5, inclusive: true).mirror.ring.tick(:cut)
       play notes.tick, amp: 0.2, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
     end
