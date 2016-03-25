@@ -1,4 +1,5 @@
 ## Transmission - Origin Unknown -Tuned Resonators in C minor
+## Random Seed Version: 746742
 ## Coded by Nanomancer
 
 #######################
@@ -12,12 +13,13 @@ set_volume! 5
 set_sched_ahead_time! 2
 use_cue_logging false
 SEED = Time.now.usec
-puts "Epoch seed: #{SEED}"
+# puts "Epoch seed: #{SEED}"
 # use_random_seed  #  # 220574 # 263020 # 746742 # 100
 # use_random_seed 471646
 # use_random_seed 32625
 # use_random_seed 489370
-use_random_seed SEED # 746742 # 100
+# use_random_seed SEED # 746742 # 100
+use_random_seed 746742 # 100
 
 # sleep 2
 # sample :elec_blip
@@ -85,7 +87,7 @@ live_loop :pulsar, sync: :pulse, auto_cue: false do
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     notes.size.times do
       cut = range(55, 85, step: 5, inclusive: true).mirror.ring.tick(:cut)
-      play notes.tick, amp: 0.2, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
+      play notes.tick, amp: 0.25, attack: 1.125, sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
     end
   end
@@ -113,7 +115,7 @@ live_loop :drone, auto_cue: false do
     frq = midi_to_hz(notes.tick)
     del = (1.0 / frq)# * 2
     with_fx :echo, amp: 1, mix: 1, phase: del, decay: 2 do
-      sample :ambi_drone, attack: 0.6, pan: 0, amp: 0.8, rate: 0.5, cutoff: 117.5
+      sample :ambi_drone, attack: 0.6, pan: 0, amp: 1, rate: 0.5, cutoff: 117.5
       sleep 8
     end
   end
@@ -128,7 +130,7 @@ live_loop :probe, sync: :prb, auto_cue: false do
 
   notes = (ring 60, 62, 63, 65, 68, 71, 72).shuffle
   puts "Probe sequence: #{notes}"
-  vol = 0.8
+  vol = 0.925
 
   4.times do
 
@@ -186,7 +188,7 @@ live_loop :transmission, sync: :trans, auto_cue: false do
     with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
       with_fx :ring_mod, freq: mod_frq do
         with_fx :slicer, mix: [0.9, 0.5, 0.25, 0.125].choose, smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-          play notes.look, amp: 0.07, attack: att, sustain: sus, release: rel, cutoff: 85
+          play notes.look, amp: 0.1, attack: att, sustain: sus, release: rel, cutoff: 85
           sleep slp.look
         end
       end
@@ -203,7 +205,7 @@ live_loop :static, sync: :stc, auto_cue: false do
   scl = scale(:c2, :harmonic_minor, num_octaves: 2).choose
   mod_frq = midi_to_hz(scl)
   phs = [0.125, 0.5, 0.25, 0.75, 1].choose
-  len = [6, 8, 10, 12, 16, 24].choose
+  len = [8, 10, 12, 16, 24, 32].choose
   puts "Static - AM: #{phs} | Len: #{len}"
 
   with_fx :hpf, cutoff: 60 do
@@ -212,7 +214,7 @@ live_loop :static, sync: :stc, auto_cue: false do
         with_fx :reverb, mix: 0.5, room: 0.6 do
           cut = rrand(60, 120)
           amt = rrand(60, 120) # cut + (rrand 0, 40)
-          s = play :c4, amp: 0.03, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
+          s = play :c4, amp: 0.0375, attack: len*0.5, release: len*0.5, cutoff: cut, cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
           control s, cutoff: amt
           sleep len*0.5
           control s, cutoff: cut
