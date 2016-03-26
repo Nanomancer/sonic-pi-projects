@@ -1,10 +1,11 @@
+
 ## Transmission - Origin Unknown -Tuned Resonators in C minor
 ## Random Seed Version: 746742
 ## Coded by Nanomancer
 
 #######################
 
-max_t = 10
+max_t = 8
 
 load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
 $global_clock = 0
@@ -20,11 +21,6 @@ SEED = Time.now.usec
 # use_random_seed 489370
 # use_random_seed SEED # 746742 # 100
 use_random_seed 746742 # 100
-
-# sleep 2
-# sample :elec_blip
-# puts "SYNC"
-# sleep 2
 
 
 ################ FUNCTIONS ########################
