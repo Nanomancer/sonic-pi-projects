@@ -170,7 +170,6 @@ scales_arr = []
   scl = scale([:c5, :c6].choose, :harmonic_minor, num_octaves: 2)
   scales_arr << mk_rand_scale(scl, 3)
 end
-# puts scales_arr
 
 live_loop :transmission, sync: :trans, auto_cue: false do
 
@@ -186,14 +185,12 @@ live_loop :transmission, sync: :trans, auto_cue: false do
     att, sus, rel = slp.tick * 0.3, slp.look * 0.2, slp.look * 0.5
     phase = [0.25, 0.5, 0.75, 1].choose
     mod_frq = rdist(0.0125, 0.5) * midi_to_hz(chd.tick(:chd))
-    # puts "Transmission - T: #{slp.look} | RM frq: #{mod_frq.round(2)}"
-
     with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
       with_fx :ring_mod, freq: mod_frq do
         with_fx :slicer, mix: rrand(0.125, 0.75),
         smooth_up: phase * 0.5, smooth_down: phase * 0.125, phase: phase do
-
-          play notes.look, amp: 0.09, attack: att, sustain: sus, release: rel, cutoff: 85
+          play notes.look, amp: 0.09, attack: att,
+            sustain: sus, release: rel, cutoff: 85
           sleep slp.look
         end
       end
@@ -220,8 +217,8 @@ live_loop :static, sync: :stc, auto_cue: false do
       mix: rrand(0.3,0.9), phase: phs do
         with_fx :reverb, mix: 0.5, room: 0.6 do
 
-          cut = rrand(60, 120)
-          amt = rrand(60, 120)
+          cut = rrand(70, 120)
+          amt = rrand(70, 120)
           s = play :c4, amp: 0.0375, attack: len*0.5,
             release: len*0.5, cutoff: cut,
             cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
