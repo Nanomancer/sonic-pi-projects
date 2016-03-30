@@ -3,7 +3,7 @@
 ## Coded by Nanomancer
 
 #######################
-
+# sample :bd_haus
 max_t = 8
 
 load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
@@ -12,7 +12,7 @@ use_bpm 60
 set_volume! 5
 set_sched_ahead_time! 2
 use_cue_logging false
-SEED = Time.now.usec
+# SEED = Time.now.usec
 # puts "Epoch seed: #{SEED}"
 # use_random_seed  #  # 220574 # 263020 # 746742 # 100
 # use_random_seed 471646
@@ -22,7 +22,7 @@ SEED = Time.now.usec
 use_random_seed 746742 # 100
 
 sleep 2
-sample :elec_blip
+sample :elec_blip, amp: 0.2
 puts "SYNC"
 sleep 8
 
@@ -87,7 +87,7 @@ live_loop :pulsar, sync: :pulse, auto_cue: false do
 
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     notes.size.times do
-      cut = range(55, 85, step: 5, inclusive: true).mirror.ring.tick(:cut)
+      cut = range(55, 90, step: 5).mirror.ring.tick(:cut)
       play notes.tick, amp: 0.25, attack: 1.125,
         sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
@@ -133,7 +133,6 @@ live_loop :probe, sync: :prb, auto_cue: false do
   puts "Probe sequence: #{notes}"
 
   4.times do
-
     phase = [0.25, 0.5, 0.75, 1, 1.5, 2].choose
     with_fx :lpf, res: 0.1, cutoff: rrand(70, 85) do
       with_fx :compressor, threshold:  0.4 do
@@ -153,7 +152,6 @@ live_loop :probe, sync: :prb, auto_cue: false do
               end
               sleep 16
             end
-
           end
           sleep [12, 16, 24, 32].choose
         end
