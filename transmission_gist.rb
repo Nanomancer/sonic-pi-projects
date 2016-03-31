@@ -12,13 +12,14 @@ use_bpm 60
 set_volume! 5
 set_sched_ahead_time! 2
 use_cue_logging false
-# SEED = Time.now.usec # uncomment this to get a different run every time
-# SEED = 471646
-# SEED = 32625
-# SEED = 489370
-SEED = 746742 
+# SEED = Time.now.usec
 # puts "Epoch seed: #{SEED}"
-use_random_seed SEED
+# use_random_seed  #  # 220574 # 263020 # 746742 # 100
+# use_random_seed 471646
+# use_random_seed 32625
+# use_random_seed 489370
+# use_random_seed SEED # 746742 # 100
+use_random_seed 746742 # 100
 
 sleep 2
 sample :elec_blip, amp: 0.2
