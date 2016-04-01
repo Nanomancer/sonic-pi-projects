@@ -15,17 +15,17 @@ use_cue_logging false
 # SEED = 471646
 # SEED = 32625
 # SEED = 489370
-SEED = 746742 
-# SEED = Time.now.usec # uncomment this to get a different run every time
-# puts "Epoch seed: #{SEED}"
+# SEED = 746742 
+SEED = Time.now.usec # get a different run every time
+puts "Epoch seed: #{SEED}"
 use_random_seed SEED
 
 
 #### Sync for video ####
-#sleep 2
-#sample :elec_blip, amp: 0.2
-#puts "SYNC"
-#sleep 8
+# sleep 2
+# sample :elec_blip, amp: 0.2
+# puts "SYNC"
+# sleep 8
 
 
 ################ FUNCTIONS ########################
