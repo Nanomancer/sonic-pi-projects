@@ -12,18 +12,20 @@ use_bpm 60
 set_volume! 5
 set_sched_ahead_time! 2
 use_cue_logging false
-# SEED = Time.now.usec # uncomment this to get a different run every time
 # SEED = 471646
 # SEED = 32625
 # SEED = 489370
 SEED = 746742 
+# SEED = Time.now.usec # uncomment this to get a different run every time
 # puts "Epoch seed: #{SEED}"
 use_random_seed SEED
 
-sleep 2
-sample :elec_blip, amp: 0.2
-puts "SYNC"
-sleep 8
+
+#### Sync for video ####
+#sleep 2
+#sample :elec_blip, amp: 0.2
+#puts "SYNC"
+#sleep 8
 
 
 ################ FUNCTIONS ########################
@@ -45,21 +47,25 @@ define :stopwatch do |int, max, fade|
       if count >= (max*60) - fade && ctrl == true
         set_mixer_control! amp: 0.01, amp_slide: fade
         puts "Stopping - #{fade} sec fadeout"
-        ctrl = false
+        ctrl = false # stops this block from running more than once
       end
     end
   end
 end
 
 define :autocue do |id, time|
+# send a cue after a specified time in decimal minutes, id must be a key
+# call in the loop you're syncing to
   return cue id if $global_clock >= time
 end
 
 define :autostop do |time|
+# same as :autocue but for stopping - call in the loop you want to stop
   return stop if $global_clock >= time
 end
 
 define :mk_rand_scale do |scale, len = 8|
+# random scale that may contain the same note more than once
   rand_s = []
   len.times do
     rand_s << scale.choose
@@ -86,7 +92,7 @@ live_loop :pulsar, sync: :pulse, auto_cue: false do
 
   with_fx :reverb, mix: 0.3, room: 0.3, amp: 1 do
     notes.size.times do
-      cut = range(55, 90, step: 5).mirror.ring.tick(:cut)
+      cut = range(55, 90, step: 5).mirror.ring.tick(:cut) # filter sweeps up & down
       play notes.tick, amp: 0.25, attack: 1.125,
         sustain: 1.25, release: 3, cutoff: cut, res: 0.2
       sleep 8
@@ -101,7 +107,7 @@ end
 live_loop :drone, auto_cue: false do
 
   autostop(max_t)
-  autocue(:prb, (rrand 0, max_t*0.3))
+  autocue(:prb, (rrand 0, max_t*0.3)) # cues up all the other loops, within specified time range
   autocue(:pulse, (rrand 0, max_t*0.4))
   autocue(:stc, (rrand 0, max_t*0.3))
   autocue(:trans, (rrand max_t*0.2, max_t*0.5))
@@ -110,8 +116,9 @@ live_loop :drone, auto_cue: false do
 
   puts "Drone sequence: #{notes}"
   notes.size.times do
-    frq = midi_to_hz(notes.tick)
-    del = 1.0 / frq
+    frq = midi_to_hz(notes.tick) # converts scale to frequency for resonator effect
+    del = 1.0 / frq # plug this into SP's echo...
+    # use echo to produced tuned resonance - avoid setting decay too high!
     with_fx :echo, amp: 1, mix: 1, phase: del, decay: 2 do
       sample :ambi_drone, attack: 0.6,
         pan: 0, amp: 1, rate: 0.5, cutoff: 117.5
@@ -147,7 +154,7 @@ live_loop :probe, sync: :prb, auto_cue: false do
                   beat_stretch: 4,
                   pan: [0.75, -0.75].ring.look,
                   amp: vol,
-                  rate: (ring 0.25, -0.25).tick(:ambi)
+                  rate: (ring 0.25, -0.25).tick(:ambi) # play forward, then reverse
               end
               sleep 16
             end
@@ -197,6 +204,8 @@ live_loop :transmission, sync: :trans, auto_cue: false do
 end
 
 
+##############  Filtered noise with Filter LFO(ish)  #########################
+
 live_loop :static, sync: :stc, auto_cue: false do
 
   use_synth :bnoise
@@ -214,14 +223,14 @@ live_loop :static, sync: :stc, auto_cue: false do
       mix: rrand(0.3,0.9), phase: phs do
         with_fx :reverb, mix: 0.5, room: 0.6 do
 
-          cut = rrand(70, 120)
-          amt = rrand(70, 120)
+          cut = rrand(70, 120) # set initial cutoff freq
+          amt = rrand(70, 120) # set secondary cutoff freq
           s = play :c4, amp: 0.0375, attack: len*0.5,
             release: len*0.5, cutoff: cut,
             cutoff_slide: len*0.5, res: (rrand 0.01, 0.6)
-          control s, cutoff: amt
+          control s, cutoff: amt # slide to secondary
           sleep len*0.5
-          control s, cutoff: cut
+          control s, cutoff: cut # slide back to initial
           sleep len*0.5
         end
       end
