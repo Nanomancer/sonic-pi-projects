@@ -1,4 +1,5 @@
-## Working title - Epoch Seed - Coded by Nanomancer
+## Working title -Epoch Seed
+## Coded by Nanomancer
 
 set_volume! 5
 rseed = Time.now.usec
@@ -12,6 +13,8 @@ puts "Seed: #{rseed}"
 ############ DEFINE FUNCTIONS #################
 
 define :varichord do |chord_arr, vol, len=8|
+  # takes an array of MIDI note numbers(preferably some sort of chord) and
+  # plays each note with different env/filt settings on each call
 
   play chord_arr[0], amp: vol*rdist(0.05, 1),
     attack: len*rrand(0.5, 0.8), sustain: len*rrand(0.25, 0.6),
@@ -29,6 +32,8 @@ define :varichord do |chord_arr, vol, len=8|
 end
 
 define :mk_rand_scale do |scale, len = 8|
+  # takes a scale array as input and generates a randomised array that
+  # may have the same note multiple times, default length 8
   rand_s = []
   len.times do
     rand_s << scale.choose
@@ -162,12 +167,13 @@ end
 live_loop :throb do
 
   use_synth :prophet
+  # set relative speed of bassline
   if one_in 4 then multi = 2
   elsif one_in 2 then multi = 0.5
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6)
+  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6) # WTF?
   slp = [4,2,2].ring
 
   cue :a_pad, multi: multi
@@ -188,13 +194,34 @@ live_loop :throb do
     end
   end
 end
+
 ###############  DRUMS 1  ################
 
 live_loop :doombeat do
   if one_in(3) then sleep [16, 32, 64].choose end
-  16.times do
-    sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: range(60, 85, step: 2.5).mirror.ring.tick
-    sleep 2
+
+  if one_in(2)
+    puts "doombeat 1"
+    cut = rrand(65, 80)
+    16.times do
+      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
+      sleep 2
+    end
+
+  elsif one_in(3)
+    puts "doombeat 2"
+    16.times do
+      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: range(60, 85, step: 2.5).mirror.ring.tick
+      sleep 2
+    end
+
+  else
+    puts "doombeat 3"
+    cut = rrand(70, 80)
+    8.times do
+      sample :loop_industrial, beat_stretch: 4, amp: 0.25, cutoff: cut
+      sleep 4
+    end
   end
 end
 
