@@ -1,18 +1,32 @@
-## Working title -Epoch Seed
+## Working(ish) title - As The Epoch Ends / falls?
+## An experiment in sending values between live_loops to increase 'intelligence' of generative abilities:
+## eg loops that can change speed/key depending on another
 ## Coded by Nanomancer
 
+use_debug false # kills the spam to the log window :)
+use_cue_logging false
+
 set_volume! 5
-rseed = Time.now.usec
+rseed = 236249
+# rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
 use_random_seed rseed
-File.open('Sync/sonic_pi/whisper_seeds.txt', 'a+') do |f|
+
+File.open('Sync/sonic_pi/epoch_fall.txt', 'a+') do |f|
+  ## open or create a txt file and append the value of rseed to it. Doesn't affect SP's output
+  ## just for dev/debugging really, useful to capture the results of
+  ## a particular clock seed if it does a good run!
+  ## put in your own path if you wish to use it, comment out otherwise.
   f.puts("Seed: #{rseed}")
 end
+
 # 236249
 puts "Seed: #{rseed}"
+
 
 ############ DEFINE FUNCTIONS #################
 
 define :varichord do |chord_arr, vol, len=8|
+
   # takes an array of MIDI note numbers(preferably some sort of chord) and
   # plays each note with different env/filt settings on each call
 
@@ -32,27 +46,36 @@ define :varichord do |chord_arr, vol, len=8|
 end
 
 define :mk_rand_scale do |scale, len = 8|
-  # takes a scale array as input and generates a randomised array that
+  # takes a scale array as input and generates a randomised ring array that
   # may have the same note multiple times, default length 8
-  rand_s = []
+  rand_s = [] # initialises an empty array
   len.times do
-    rand_s << scale.choose
+    rand_s << scale.choose ## the 'double less-than' (<<) appends the value of scale.choose to the array
   end
-  return rand_s.ring
+  return rand_s.ring # making it a ring here means less work elsewhere!
 end
 
 
 define :bass_patt do |rst, no_rest, rst_harp, deg, multi, slp|
-  play (degree deg, :A1, :hungarian_minor), amp: 0.13, attack: rdist(0.01, 0.02), release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1), cutoff: rdist(2.1, 80) unless rst
-  puts "Bass degree: #{deg}"
-  sleep slp.look(:slp) *0.5*multi
-  unless no_rest && multi == 2
-    if multi == 2 && one_in(2) && rst_harp == false then cue :d_harp, degree: deg, multi: multi# 3
-    elsif multi == 1 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg
+
+  ## Gets called twice in the bass throb loop, avoids duplicating code
+  ## needs some tidying, posssibly too many arguments(inputs to the function)
+  ## variable names are confusing - edit
+
+  play (degree deg, :A1, :hungarian_minor), # degree is an SP builtin, see help
+    amp: 0.13, attack: rdist(0.01, 0.02),
+    release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1),
+    cutoff: rdist(2.1, 80) unless rst # no sound if rst=TRUE
+  puts "Bass degree: #{deg}" # used for dev/debug
+
+  sleep slp.look(:slp) *0.5*multi # sleep even if bass is resting, waits for half of the length of a bass note before darkharp gets cued
+  unless no_rest && multi == 2 # this block only executes if both values are false
+    if multi == 2 && one_in(2) && rst_harp == false then cue :d_harp, degree: deg, multi: multi # 'transmits' the cue msg, note/degree of scale and relative speed
+    elsif multi == 1 && one_in(3) && rst_harp == false then cue :d_harp, degree: deg #
     end
-  else cue :d_harp, degree: deg
+  else cue :d_harp, degree: deg # must be for emergency?
   end
-  sleep slp.look(:slp) *0.5*multi
+  sleep slp.look(:slp) *0.5*multi # cueing complete, the other half of the sleep
 end
 
 
@@ -80,12 +103,15 @@ end
 
 ############ GENERATE WHISPER SEQUENCE  ##############
 
+## uses the mk_rand_scale function to generate two different scale patterns
+## this is outside the live loop so only regenerates on run, not each iteration of the whisper loop
+
 scales_arr = []
-2.times do
+2.times do # increasing the number of loops here will give more melodic patterns for the whisper live_loop below to choose from
   scl = scale(:a3, :hungarian_minor, num_octaves: 2)
   scales_arr << mk_rand_scale(scl, 3)
 end
-puts scales_arr
+puts "Generated patterns for whisper loop:\n#{scales_arr}" # just checking, puts is your friend and will make debugging so much easier :)
 
 
 ############### WHISPER LEAD ##################
@@ -96,7 +122,7 @@ live_loop :whisper do
   # autosync(:trans)
   # autostop(rrand max_t*0.8, max_t) # (rrand_i 5, 7)
 
-  notes = scales_arr.choose
+  notes = scales_arr.choose # remember our array - 'scales_arr' is multidimensional - it's lists within a list, so this
   slp = [[2,2,4], [2,2], [4,4,8], [4,4], [2,1.5,0.5,4]].choose.ring
 
   2.times do
@@ -137,7 +163,8 @@ live_loop :darkharp, auto_cue: false do
   if one_in(3) then reps = 1
   else reps = 2
   end
-
+  ## explain this block. seek help on pattern/rule to enable simplification mathmetically?
+  ##
   if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
   elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
   elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
@@ -166,6 +193,7 @@ end
 
 live_loop :throb do
 
+  ## the heart of it all, generates the bassline and lets ambipad and darkharp know what to play
   use_synth :prophet
   # set relative speed of bassline
   if one_in 4 then multi = 2
@@ -173,18 +201,18 @@ live_loop :throb do
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6) # WTF?
+  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6) # lets get these variable names a little more clear!
   slp = [4,2,2].ring
 
-  cue :a_pad, multi: multi
+  cue :a_pad, multi: multi # lets ambipad know what's going on :)
   deg1_reps = [3,9].choose
 
   with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
     2.times do
       deg1_reps.times do
 
-        deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii].ring.tick
-        bass_patt(rst, no_rest, rst_harp, deg1, multi, slp)
+        deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii].ring.tick # yeah, I'm confused too. Alternates octaves...
+        bass_patt(rst, no_rest, rst_harp, deg1, multi, slp) #
       end
 
       3.times do
@@ -198,10 +226,10 @@ end
 ###############  DRUMS 1  ################
 
 live_loop :doombeat do
-  if one_in(3) then sleep [16, 32, 64].choose end
+  if one_in(3) then sleep [16, 32, 64].choose end #
 
   if one_in(2)
-    puts "doombeat 1"
+    puts "Doombeat 1" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
     cut = rrand(65, 80)
     16.times do
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
@@ -209,14 +237,14 @@ live_loop :doombeat do
     end
 
   elsif one_in(3)
-    puts "doombeat 2"
+    puts "Doombeat 2"
     16.times do
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: range(60, 85, step: 2.5).mirror.ring.tick
       sleep 2
     end
 
   else
-    puts "doombeat 3"
+    puts "Doombeat 3"
     cut = rrand(70, 80)
     8.times do
       sample :loop_industrial, beat_stretch: 4, amp: 0.25, cutoff: cut
