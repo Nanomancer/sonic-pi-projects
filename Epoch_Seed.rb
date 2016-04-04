@@ -5,7 +5,8 @@
 
 use_debug false # kills the spam to the log window :)
 use_cue_logging false
-
+$global_clock = 0
+max_t = 6
 set_volume! 5
 rseed = 236249
 # rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
@@ -25,8 +26,38 @@ puts "Seed: #{rseed}"
 
 ############ DEFINE FUNCTIONS #################
 
-define :varichord do |chord_arr, vol, len=8|
+define :stopwatch do |int, max, fade|
+  ## interval in seconds (display for log timer),
+  ## max in mins, fade in secs
+  count = 0
+  set_mixer_control! amp: 1, amp_slide: 0.1
+  with_bpm 60 do
+    ctrl = true
+    while count / 60.0 <= max
+      if count % int == 0
+        puts "Time: #{count / 60.0} Minutes"
+      end
+      count += 1
+      sleep 1
+      $global_clock = count / 60.0
+      if count >= (max*60) - fade && ctrl == true
+        set_mixer_control! amp: 0.01, amp_slide: fade
+        puts "Stopping - #{fade} sec fadeout"
+        ctrl = false
+      end
+    end
+  end
+end
 
+define :autocue do |id, time|
+  return cue id if $global_clock >= time
+end
+
+define :autostop do |time|
+  return stop if $global_clock >= time
+end
+
+define :varichord do |chord_arr, vol, len=8|
   # takes an array of MIDI note numbers(preferably some sort of chord) and
   # plays each note with different env/filt settings on each call
 
@@ -42,7 +73,6 @@ define :varichord do |chord_arr, vol, len=8|
   # play chord_arr[3], amp: vol*rrand(0.8, 1.2),
   #   attack: len*rrand(0.3, 0.6), sustain: len*rrand(0.25, 0.5),
   #   release: len*rrand(0.3, 0.6), cutoff: rrand(75,110), pan: 0.5
-
 end
 
 define :mk_rand_scale do |scale, len = 8|
@@ -79,6 +109,12 @@ define :bass_patt do |rst, no_rest, rst_harp, deg, multi, slp|
 end
 
 
+#############  CLOCK  #####################
+
+in_thread do
+  stopwatch(30, max_t, max_t*60*0.05)
+end
+
 #############  PAD  ###############
 
 live_loop :ambipad do
@@ -88,6 +124,7 @@ live_loop :ambipad do
 
   3.times do
     len = [8, 8, 16].ring.tick
+    puts "Pad - len: #{len}"
     chords2 = (chord_invert (chord_degree [:i, [:vii, :v].choose, :i].ring.look,
                              :A2, :hungarian_minor, 3), rrand_i(0,3))
     # puts "Ambipad: #{chords2} | length: #{len}"
@@ -98,6 +135,7 @@ live_loop :ambipad do
     end
   end
   if one_in 3 then sleep [8,16,32].choose end
+  autostop(max_t)
 end
 
 
@@ -116,16 +154,15 @@ puts "Generated patterns for whisper loop:\n#{scales_arr}" # just checking, puts
 
 ############### WHISPER LEAD ##################
 
-live_loop :whisper do
-
+live_loop :whisper, delay: [16, 32].choose do
+  autostop(rrand max_t*0.85, max_t)
   use_synth :dark_ambience
-  # autosync(:trans)
-  # autostop(rrand max_t*0.8, max_t) # (rrand_i 5, 7)
 
   notes = scales_arr.choose # remember our array - 'scales_arr' is multidimensional - it's lists within a list, so this
   slp = [[2,2,4], [2,2], [4,4,8], [4,4], [2,1.5,0.5,4]].choose.ring
 
   2.times do
+    puts "Whisper"
     tick_reset
     slp.size.times do
       att, sus, rel = slp.tick * 0.1, slp.look * 0.4, slp.look * 0.6
@@ -148,7 +185,7 @@ end
 ################  DARKHARP HIT ################
 
 live_loop :darkharp, auto_cue: false do
-
+  autostop(rrand max_t*0.9, max_t)
   map = sync :d_harp
   use_synth :zawa
 
@@ -195,15 +232,16 @@ live_loop :throb do
 
   ## the heart of it all, generates the bassline and lets ambipad and darkharp know what to play
   use_synth :prophet
+  autostop(max_t)
   # set relative speed of bassline
   if one_in 4 then multi = 2
   elsif one_in 2 then multi = 0.5
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6) # lets get these variable names a little more clear!
+  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6) # rest chances - lets get these variable names a little more clear!
+  if look == 0 then rst, rst_harp = true, true end
   slp = [4,2,2].ring
-
   cue :a_pad, multi: multi # lets ambipad know what's going on :)
   deg1_reps = [3,9].choose
 
@@ -225,10 +263,11 @@ end
 
 ###############  DRUMS 1  ################
 
-live_loop :doombeat do
-  if one_in(3) then sleep [16, 32, 64].choose end #
+live_loop :doombeat, delay: [32, 64].choose do
 
-  if one_in(2)
+  autostop(rrand max_t*0.8, max_t*0.95)
+
+  if one_in(3)
     puts "Doombeat 1" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
     cut = rrand(65, 80)
     16.times do
@@ -236,7 +275,7 @@ live_loop :doombeat do
       sleep 2
     end
 
-  elsif one_in(3)
+  elsif one_in(2)
     puts "Doombeat 2"
     16.times do
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: range(60, 85, step: 2.5).mirror.ring.tick
@@ -251,6 +290,7 @@ live_loop :doombeat do
       sleep 4
     end
   end
+  if one_in(3) then sleep [16, 32, 64].choose end #
 end
 
 ###
