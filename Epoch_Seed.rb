@@ -6,7 +6,7 @@
 use_debug false # kills the spam to the log window :)
 use_cue_logging false
 $global_clock = 0
-max_t = 6
+max_t = 4.9
 set_volume! 5
 rseed = 236249
 # rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
@@ -21,8 +21,11 @@ File.open('Sync/sonic_pi/epoch_fall.txt', 'a+') do |f|
 end
 
 # 236249
-puts "Seed: #{rseed}"
+# puts "Seed: #{rseed}"
 
+puts "As The Epoch Ends"
+puts "Coded by Nanomancer"
+sleep 1
 
 ############ DEFINE FUNCTIONS #################
 
@@ -96,7 +99,7 @@ define :bass_patt do |rst, no_rest, rst_harp, deg, multi, slp|
     amp: 0.13, attack: rdist(0.01, 0.02),
     release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1),
     cutoff: rdist(2.1, 80) unless rst # no sound if rst=TRUE
-  puts "Bass degree: #{deg}" # used for dev/debug
+  unless rst then puts "Bass: Deg: #{deg} | Len #{slp.look(:slp)*multi}" end# used for dev/debug
 
   sleep slp.look(:slp) *0.5*multi # sleep even if bass is resting, waits for half of the length of a bass note before darkharp gets cued
   unless no_rest && multi == 2 # this block only executes if both values are false
@@ -112,7 +115,7 @@ end
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(30, max_t, max_t*60*0.05)
+  stopwatch(30, max_t, max_t*60*0.075)
 end
 
 #############  PAD  ###############
@@ -124,7 +127,7 @@ live_loop :ambipad do
 
   3.times do
     len = [8, 8, 16].ring.tick
-    puts "Pad - len: #{len}"
+    puts "Ambipad - len: #{len}"
     chords2 = (chord_invert (chord_degree [:i, [:vii, :v].choose, :i].ring.look,
                              :A2, :hungarian_minor, 3), rrand_i(0,3))
     # puts "Ambipad: #{chords2} | length: #{len}"
@@ -162,9 +165,10 @@ live_loop :whisper, delay: [16, 32].choose do
   slp = [[2,2,4], [2,2], [4,4,8], [4,4], [2,1.5,0.5,4]].choose.ring
 
   2.times do
-    puts "Whisper"
+    puts "Whisper seq: #{slp}"
     tick_reset
     slp.size.times do
+      puts "Whisper - Len: #{slp.look}"
       att, sus, rel = slp.tick * 0.1, slp.look * 0.4, slp.look * 0.6
       phase = [0.25, 0.5, 0.75, 1].choose
       with_fx :echo, mix: 0.25, phase: 1.5, decay: 4 do
@@ -268,26 +272,29 @@ live_loop :doombeat, delay: [32, 64].choose do
   autostop(rrand max_t*0.8, max_t*0.95)
 
   if one_in(3)
-    puts "Doombeat 1" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
     cut = rrand(65, 80)
     16.times do
+      puts "Doombeat 1 | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
       sleep 2
     end
 
   elsif one_in(2)
-    puts "Doombeat 2"
     16.times do
-      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: range(60, 85, step: 2.5).mirror.ring.tick
+      cut = range(60, 85, step: 2.5).mirror.ring
+      puts "Doombeat sweep | Cutoff: #{cut.look}"
+      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut.tick
       sleep 2
     end
 
   else
-    puts "Doombeat 3"
     cut = rrand(70, 80)
     8.times do
+      puts "Doombeat Slow | Cutoff: #{cut.round(2)}"
       sample :loop_industrial, beat_stretch: 4, amp: 0.25, cutoff: cut
-      sleep 4
+      sleep 2
+      puts "Doombeat 3 Bigsnare"
+      sleep 2
     end
   end
   if one_in(3) then sleep [16, 32, 64].choose end #
