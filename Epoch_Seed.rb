@@ -271,17 +271,17 @@ live_loop :doombeat, delay: [32, 64].choose do
 
   autostop(rrand max_t*0.8, max_t*0.95)
 
-  if one_in(3)
-    cut = rrand(65, 80)
+  if one_in(4)
+    cut = rrand(68, 82)
     16.times do
       puts "Doombeat 1 | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
       sleep 2
     end
 
-  elsif one_in(2)
+  elsif one_in(3)
     16.times do
-      cut = range(60, 85, step: 2.5).mirror.ring
+      cut = range(64, 78, step: 2).mirror.ring
       puts "Doombeat sweep | Cutoff: #{cut.look}"
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut.tick
       sleep 2
