@@ -38,6 +38,7 @@ define :stopwatch do |int, max, fade|
   with_bpm 60 do
     ctrl = true
     while count / 60.0 <= max
+      if count / 60.0 == 1.0 then use_random_seed rseed end
       if count % int == 0
         puts "Time: #{count / 60.0} Minutes"
       end
@@ -200,12 +201,19 @@ end
 
 ################  DARKHARP HIT ################
 
-live_loop :darkharp, auto_cue: false do
-  autostop(rrand max_t*0.9, max_t)
+live_loop :darkharp, auto_cue: false do |loopcount|
+  # autostop(rrand max_t*0.7, max_t)
+  autostop(max_t)
+
+  rand_skip(1)
   map = sync :d_harp
   use_synth :zawa
-
+  if loopcount == 5
+    rand_reset
+    rand_skip(1)
+  end
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
+  puts "DH LOOPCOUNT: #{loopcount}"
   puts "Darkharp degree: #{map[:degree]}"
 
   if map[:multi] == 2 then slp = [0.25,0.5,0.75].choose
@@ -233,33 +241,40 @@ live_loop :darkharp, auto_cue: false do
 
         oct = [12, -12].choose
         puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
-        play chords2[note1]+oct, amp: 0.1, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
+        play chords2[note1]+oct, amp: 0.09, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
         sleep slp
-        play chords2[note2], amp: 0.1, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
+        play chords2[note2], amp: 0.09, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
         sleep slp
       end
     end
   end
+  loopcount += 1
 end
 
 
 ############### BASS THROB ################
 
 
+basscount = 0
 live_loop :throb do
-
+  basscount += 1
+  puts "BASSCOUNT #{basscount}"
+  if basscount == 3
+    rand_reset
+  end
   # if idx == 1 then use_random_seed rseed end
 
   ## the heart of it all, generates the bassline and lets ambipad and darkharp know what to play
   use_synth :prophet
   autostop(max_t)
   # set relative speed of bassline
-  if one_in 4 then multi = 2
+  if basscount >= 4 then multi = 0.5
+  elsif one_in 4 then multi = 2
   elsif one_in 2 then multi = 0.5
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(8), one_in(6) # rest chances - lets get these variable names a little more clear!
+  rst, rst_harp, no_rest = one_in(4), one_in(9), one_in(4) # rest chances - lets get these variable names a little more clear!
   if look == 0 then rst, rst_harp = true, true end
   slp = [4,2,2].ring
   cue :a_pad, multi: multi # lets ambipad know what's going on :)
@@ -287,26 +302,10 @@ end
 # live_loop :doombeat, delay: [32, 64].choose do
 live_loop :doombeat, delay: 16 do
 
-  autostop(rrand max_t*0.8, max_t*0.95)
+  # autostop(rrand max_t*0.8, max_t*0.95)
+  autostop(rrand max_t*0.9, max_t)
 
-  if one_in(3)
-    cut = rrand(68, 80)
-    8.times do
-      puts "Doombeat 1 | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
-      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
-      sleep 2
-    end
-
-  elsif one_in(3)
-    tick_reset
-    16.times do
-      cut = range(64, 78, step: 2).mirror.ring
-      puts "Doombeat sweep | Cutoff: #{cut.look}"
-      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut.tick
-      sleep 2
-    end
-
-  else
+  if one_in(5) || look == 0
     # cut = rrand(70, 80)
     tick_reset
     8.times do
@@ -317,8 +316,25 @@ live_loop :doombeat, delay: 16 do
       puts "Doombeat 3 Bigsnare"
       sleep 2
     end
+
+  elsif one_in(2)
+    tick_reset
+    16.times do
+      cut = range(62, 76, step: 2).mirror.ring
+      puts "Doombeat sweep | Cutoff: #{cut.look}"
+      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut.tick
+      sleep 2
+    end
+
+  else
+    cut = rrand(68, 80)
+    8.times do
+      puts "Doombeat | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
+      sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
+      sleep 2
+    end
   end
-  if one_in(2) then sleep [8, 16, 32].choose end #
+  if one_in(3) then sleep [8, 16, 24].choose end #
 end
 
 ###
