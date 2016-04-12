@@ -6,7 +6,7 @@ set_volume! 5
 use_debug false # kills the spam to the log window :)
 use_cue_logging false
 $global_clock = 0
-max_t = 3.8
+max_t = 3.9
 rseed = 236249
 # rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
 use_random_seed rseed
@@ -203,7 +203,7 @@ end
 
 live_loop :darkharp, auto_cue: false do |loopcount|
   # autostop(rrand max_t*0.7, max_t)
-  autostop(max_t)
+  autostop(max_t*0.95)
 
   rand_skip(1)
   map = sync :d_harp
@@ -211,6 +211,9 @@ live_loop :darkharp, auto_cue: false do |loopcount|
   if loopcount == 5
     rand_reset
     rand_skip(1)
+  elsif loopcount == 11
+    rand_reset
+    rand_back(3)
   end
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
   puts "DH LOOPCOUNT: #{loopcount}"
@@ -268,14 +271,18 @@ live_loop :throb do
   use_synth :prophet
   autostop(max_t)
   # set relative speed of bassline
-  if basscount >= 4 then multi = 0.5
-  elsif one_in 4 then multi = 2
+  # if basscount == 4 then multi = 0.5
+  if one_in 4 then multi = 2
   elsif one_in 2 then multi = 0.5
   else multi = 1
   end
   # multi = 2
   rst, rst_harp, no_rest = one_in(4), one_in(9), one_in(4) # rest chances - lets get these variable names a little more clear!
-  if look == 0 then rst, rst_harp = true, true end
+  if look == 0
+    rst, rst_harp = true, true
+  elsif basscount == 4
+    rst, rst_harp = false, false
+  end
   slp = [4,2,2].ring
   cue :a_pad, multi: multi # lets ambipad know what's going on :)
   deg1_reps = [3,9].choose
@@ -334,7 +341,7 @@ live_loop :doombeat, delay: 16 do
       sleep 2
     end
   end
-  if one_in(3) then sleep [8, 16, 24].choose end #
+  if one_in(2.75) then sleep [8, 16, 24].choose end #
 end
 
 ###
