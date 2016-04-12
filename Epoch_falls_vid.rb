@@ -6,7 +6,7 @@ set_volume! 5
 use_debug false # kills the spam to the log window :)
 use_cue_logging false
 $global_clock = 0
-max_t = 4.9
+max_t = 3.8
 rseed = 236249
 # rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
 use_random_seed rseed
@@ -119,6 +119,14 @@ in_thread do
   stopwatch(30, max_t, max_t*60*0.075)
 end
 
+# in_thread do
+#   # if $global_clock >= max then use_random_seed rseed end
+#   while $global_clock * 60 < 90
+#     puts $global_clock * 60
+#     sleep 2
+#   end
+# end
+
 #############  PAD  ###############
 
 live_loop :ambipad do
@@ -158,13 +166,16 @@ puts "Generated patterns for whisper loop:\n#{scales_arr}" # just checking, puts
 
 ############### WHISPER LEAD ##################
 
-live_loop :whisper, delay: [16, 32].choose do
+# live_loop :whisper, delay: [16, 32].choose do
+live_loop :whisper, delay: 16 do
+
   autostop(rrand max_t*0.85, max_t)
   use_synth :dark_ambience
 
   notes = scales_arr.choose # remember our array - 'scales_arr' is multidimensional - it's lists within a list, so this
   slp = [[2,2,4], [2,2], [4,4,8], [4,4], [2,1.5,0.5,4]].choose.ring
-
+  if look == 0 then rand_back(4) end
+  puts"whisper look #{look}"
   2.times do
     puts "Whisper seq: #{slp}"
     tick_reset
@@ -207,6 +218,7 @@ live_loop :darkharp, auto_cue: false do
   end
   ## explain this block. seek help on pattern/rule to enable simplification mathmetically?
   ##
+  # rand_back(4)
   if map[:degree] == :i || map[:degree] == :viii && note1 == 0 then note2 = note1 + [1,2,3,4].choose
   elsif map[:degree] == :i || map[:degree] == :viii && note1 == 1 then note2 = note1 + [1,3,4].choose
   elsif map[:degree] == :iii && note1 == 0 then note2 = note1 + [1,3].choose
@@ -233,7 +245,10 @@ end
 
 ############### BASS THROB ################
 
+
 live_loop :throb do
+
+  # if idx == 1 then use_random_seed rseed end
 
   ## the heart of it all, generates the bassline and lets ambipad and darkharp know what to play
   use_synth :prophet
@@ -264,6 +279,7 @@ live_loop :throb do
       end
     end
   end
+  # idx += 1
 end
 
 ###############  DRUMS 1  ################
@@ -273,7 +289,7 @@ live_loop :doombeat, delay: 16 do
 
   autostop(rrand max_t*0.8, max_t*0.95)
 
-  if one_in(4)
+  if one_in(3)
     cut = rrand(68, 80)
     8.times do
       puts "Doombeat 1 | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
