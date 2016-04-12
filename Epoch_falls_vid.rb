@@ -6,7 +6,7 @@ set_volume! 5
 use_debug false # kills the spam to the log window :)
 use_cue_logging false
 $global_clock = 0
-max_t = 3.9
+max_t = 3.85
 rseed = 236249
 # rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
 use_random_seed rseed
@@ -101,7 +101,7 @@ define :bass_patt do |rst, no_rest, rst_harp, deg, multi, slp|
     amp: 0.13, attack: rdist(0.01, 0.02),
     release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1),
     cutoff: rdist(2.1, 80) unless rst # no sound if rst=TRUE
-  unless rst then puts "Bass: Deg: #{deg} | Len #{slp.look(:slp)*multi}" end# used for dev/debug
+  unless rst then puts "Bass - Deg: #{deg} | Len: #{slp.look(:slp)*multi}" end# used for dev/debug
 
   sleep slp.look(:slp) *0.5*multi # sleep even if bass is resting, waits for half of the length of a bass note before darkharp gets cued
   unless no_rest && multi == 2 # this block only executes if both values are false
@@ -117,7 +117,7 @@ end
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(30, max_t, max_t*60*0.075)
+  stopwatch(30, max_t, 10)
 end
 
 # in_thread do
@@ -176,9 +176,8 @@ live_loop :whisper, delay: 16 do
   notes = scales_arr.choose # remember our array - 'scales_arr' is multidimensional - it's lists within a list, so this
   slp = [[2,2,4], [2,2], [4,4,8], [4,4], [2,1.5,0.5,4]].choose.ring
   if look == 0 then rand_back(4) end
-  puts"whisper look #{look}"
   2.times do
-    puts "Whisper seq: #{slp}"
+    # puts "Whisper seq: #{slp}"
     tick_reset
     slp.size.times do
       puts "Whisper - Len: #{slp.look}"
@@ -213,11 +212,11 @@ live_loop :darkharp, auto_cue: false do |loopcount|
     rand_skip(1)
   elsif loopcount == 11
     rand_reset
-    rand_back(3)
+    rand_back(2)
   end
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
-  puts "DH LOOPCOUNT: #{loopcount}"
-  puts "Darkharp degree: #{map[:degree]}"
+  puts "DarkHarp - LOOPCOUNT: #{loopcount}"
+  # puts "Darkharp degree: #{map[:degree]}"
 
   if map[:multi] == 2 then slp = [0.25,0.5,0.75].choose
   else slp = 0.25
@@ -243,7 +242,7 @@ live_loop :darkharp, auto_cue: false do |loopcount|
       reps.times do
 
         oct = [12, -12].choose
-        puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
+        # puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
         play chords2[note1]+oct, amp: 0.09, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
         sleep slp
         play chords2[note2], amp: 0.09, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
@@ -261,7 +260,7 @@ end
 basscount = 0
 live_loop :throb do
   basscount += 1
-  puts "BASSCOUNT #{basscount}"
+  # puts "BASSCOUNT #{basscount}"
   if basscount == 3
     rand_reset
   end
@@ -324,7 +323,7 @@ live_loop :doombeat, delay: 16 do
       sleep 2
     end
 
-  elsif one_in(2)
+  elsif one_in(3)
     tick_reset
     16.times do
       cut = range(62, 76, step: 2).mirror.ring
@@ -341,7 +340,7 @@ live_loop :doombeat, delay: 16 do
       sleep 2
     end
   end
-  if one_in(2.75) then sleep [8, 16, 24].choose end #
+  if one_in(2) then sleep [8, 8, 16].choose end #
 end
 
 ###
