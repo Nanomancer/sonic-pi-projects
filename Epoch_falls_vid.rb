@@ -2,11 +2,16 @@
 ## An experiment in sending values between live_loops to increase 'intelligence' of generative abilities:
 ## eg loops that can change speed/key depending on another
 ## Coded by Nanomancer
+
+## WARNING! there's some funny(ish) stuff going on to force certain events at certain times...
+## The interaction between Darkharp and bassthrob caused some headaches with recalling events in the random stream
+## Needs some tidying
+
 set_volume! 5
 use_debug false # kills the spam to the log window :)
 use_cue_logging false
 $global_clock = 0
-max_t = 3.85
+max_t = 3.34
 rseed = 236249
 # rseed = Time.now.usec # uses the value of the microseconds part of your computers clock as a seed
 use_random_seed rseed
@@ -22,11 +27,11 @@ use_random_seed rseed
 # 236249
 # puts "Seed: #{rseed}"
 
-# puts "sync!"
-# sample :elec_blip, amp: 0.6
-# puts "As The Epoch Ends"
-# puts "Coded by Nanomancer"
-# sleep 8
+puts "sync!"
+sample :elec_blip, amp: 0.6
+puts "As The Epoch Falls"
+puts "Coded by Nanomancer"
+sleep 8
 
 ############ DEFINE FUNCTIONS #################
 
@@ -101,7 +106,7 @@ define :bass_patt do |rst, no_rest, rst_harp, deg, multi, slp|
     amp: 0.13, attack: rdist(0.01, 0.02),
     release: slp.tick(:slp)*multi*1.25*rdist(0.1, 1),
     cutoff: rdist(2.1, 80) unless rst # no sound if rst=TRUE
-  unless rst then puts "Bass - Deg: #{deg} | Len: #{slp.look(:slp)*multi}" end# used for dev/debug
+  unless rst then puts "BASS - Deg: #{deg} | Len: #{slp.look(:slp)*multi}" end# used for dev/debug
 
   sleep slp.look(:slp) *0.5*multi # sleep even if bass is resting, waits for half of the length of a bass note before darkharp gets cued
   unless no_rest && multi == 2 # this block only executes if both values are false
@@ -117,7 +122,7 @@ end
 #############  CLOCK  #####################
 
 in_thread do
-  stopwatch(30, max_t, 10)
+  stopwatch(30, max_t, 20)
 end
 
 # in_thread do
@@ -170,7 +175,7 @@ puts "Generated patterns for whisper loop:\n#{scales_arr}" # just checking, puts
 # live_loop :whisper, delay: [16, 32].choose do
 live_loop :whisper, delay: 16 do
 
-  autostop(rrand max_t*0.85, max_t)
+  autostop(rrand max_t*0.9, max_t)
   use_synth :dark_ambience
 
   notes = scales_arr.choose # remember our array - 'scales_arr' is multidimensional - it's lists within a list, so this
@@ -202,7 +207,7 @@ end
 
 live_loop :darkharp, auto_cue: false do |loopcount|
   # autostop(rrand max_t*0.7, max_t)
-  autostop(max_t*0.95)
+  autostop(max_t)
 
   rand_skip(1)
   map = sync :d_harp
@@ -215,7 +220,7 @@ live_loop :darkharp, auto_cue: false do |loopcount|
     rand_back(2)
   end
   chords2 = (chord_degree map[:degree], :A3, :hungarian_minor, 5)
-  puts "DarkHarp - LOOPCOUNT: #{loopcount}"
+  puts "DARKHARP - No: #{loopcount}"
   # puts "Darkharp degree: #{map[:degree]}"
 
   if map[:multi] == 2 then slp = [0.25,0.5,0.75].choose
@@ -243,9 +248,9 @@ live_loop :darkharp, auto_cue: false do |loopcount|
 
         oct = [12, -12].choose
         # puts "Darkharp notes- N1= #{note1+1} - N2= #{note2+1}"
-        play chords2[note1]+oct, amp: 0.09, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
+        play chords2[note1]+oct, amp: 0.081, attack: rdist(0.01, 0.06), release: rdist(0.125, 1.25), cutoff: rdist(3, 95), pan: 1
         sleep slp
-        play chords2[note2], amp: 0.09, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
+        play chords2[note2], amp: 0.082, attack: rdist(0.01, 0.07), release: rdist(0.1, 1.5), cutoff: rdist(3, 95), pan: -1
         sleep slp
       end
     end
@@ -257,11 +262,10 @@ end
 ############### BASS THROB ################
 
 
-basscount = 0
-live_loop :throb do
-  basscount += 1
-  # puts "BASSCOUNT #{basscount}"
-  if basscount == 3
+live_loop :throb do |loopcount|
+
+  # puts "BASSCOUNT #{loopcount}"
+  if loopcount == 2
     rand_reset
   end
   # if idx == 1 then use_random_seed rseed end
@@ -276,18 +280,19 @@ live_loop :throb do
   else multi = 1
   end
   # multi = 2
-  rst, rst_harp, no_rest = one_in(4), one_in(9), one_in(4) # rest chances - lets get these variable names a little more clear!
+  rst, rst_harp, no_rest = one_in(4), one_in(11), one_in(4) # rest chances - lets get these variable names a little more clear!
   if look == 0
     rst, rst_harp = true, true
-  elsif basscount == 4
+  elsif loopcount == 3
     rst, rst_harp = false, false
   end
   slp = [4,2,2].ring
   cue :a_pad, multi: multi # lets ambipad know what's going on :)
   deg1_reps = [3,9].choose
-
   with_fx :slicer, phase: 0.5, mix: 0.5, smooth_up: 0.125 do
     2.times do
+      repcount += 1
+      # puts "repcount #{repcount}"
       deg1_reps.times do
 
         deg1 = [[:i, :viii].ring.tick(:oct), :i, :vii].ring.tick # yeah, I'm confused too. Alternates octaves...
@@ -301,6 +306,7 @@ live_loop :throb do
     end
   end
   # idx += 1
+  loopcount += 1
 end
 
 ###############  DRUMS 1  ################
@@ -309,17 +315,17 @@ end
 live_loop :doombeat, delay: 16 do
 
   # autostop(rrand max_t*0.8, max_t*0.95)
-  autostop(rrand max_t*0.9, max_t)
+  autostop(rrand max_t*0.85, max_t)
 
   if one_in(5) || look == 0
     # cut = rrand(70, 80)
     tick_reset
     8.times do
       cut = range(66, 72, step: 2).mirror.ring
-      puts "Doombeat slow | Cutoff: #{cut.look}"
+      puts "DOOMBEAT slow | Cutoff: #{cut.look}"
       sample :loop_industrial, beat_stretch: 4, amp: 0.25, cutoff: cut.tick
       sleep 2
-      puts "Doombeat 3 Bigsnare"
+      puts "DOOMBEAT Bigsnare"
       sleep 2
     end
 
@@ -327,15 +333,15 @@ live_loop :doombeat, delay: 16 do
     tick_reset
     16.times do
       cut = range(62, 76, step: 2).mirror.ring
-      puts "Doombeat sweep | Cutoff: #{cut.look}"
+      puts "DOOMBEAT sweep | Cutoff: #{cut.look}"
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut.tick
       sleep 2
     end
 
   else
-    cut = rrand(68, 80)
+    cut = rrand(68, 78)
     8.times do
-      puts "Doombeat | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
+      puts "DOOMBEAT | Cutoff: #{cut.round(2)}" # using your own debugging makes it clear what part of the loop is executing(or not) at any given time
       sample :loop_industrial, beat_stretch: 2, amp: 0.225, cutoff: cut
       sleep 2
     end
