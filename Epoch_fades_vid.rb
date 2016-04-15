@@ -1,11 +1,18 @@
-## Working(ish) title - As The Epoch Ends / falls?
-## An experiment in sending values between live_loops to increase 'intelligence' of generative abilities:
-## eg loops that can change speed/key depending on another
-## Coded by Nanomancer
+## As The Epoch Fades - Video Version
+## Coded by Nanomancer 13.04.2016
+## Sonic Pi version 2.9
 
-## WARNING! there's some funny(ish) stuff going on to force certain events at certain times...
-## The interaction between Darkharp and bassthrob caused some headaches with recalling events in the random stream
-## Needs some tidying
+=begin
+
+About:
+An experiment in sending values between live_loops to increase 'intelligence' of generative abilities:
+eg loops that can change speed/key depending on another
+
+WARNING! there's some funny(ish) stuff going on to force certain events at certain times, and the
+interaction between Darkharp and bassthrob caused some headaches with recalling events in the random stream.
+Still needs some tidying
+
+=end
 
 set_volume! 5
 use_debug false # kills the spam to the log window :)
