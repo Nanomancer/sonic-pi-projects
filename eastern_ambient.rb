@@ -1,7 +1,7 @@
 ## Eastern pluck & 'safari' percussion
 ## Coded by Nanomancer
-set_volume! 5
 use_bpm 120
+set_volume! 5
 
 ##| puts "SYNC"
 ##| sample :elec_blip, amp: 0.5
@@ -9,18 +9,16 @@ use_bpm 120
 
 live_loop :safari, delay: 32 do
   with_fx :reverb, mix: 0.4, room: 0.6 do
-    2.times do
-      if one_in(2) then sample :loop_safari, amp: 0.9, finish: 0.5, rate: 0.5, beat_stretch: 16 end
-      if one_in(3) then sample :loop_safari, amp: 0.325, rate: 1, beat_stretch: 16 end
-      ##| sample :loop_compus, start: 0, rate: 1, beat_stretch: 16, amp: 0.7, cutoff: 110
-      
-      sleep 16
-    end
+    if one_in(3) then sample :loop_safari, amp: 0.9, finish: 0.5, rate: 0.5, beat_stretch: 16
+    elsif one_in(3) then sample :loop_safari, amp: 0.9, start: 0.5, rate: 0.5, beat_stretch: 16 end
+    
+    if one_in(3) then sample :loop_safari, amp: 0.35, rate: 1, beat_stretch: 16 end
+    sleep 16
   end
   ##| stop
 end
 
-live_loop :kicker, delay: 8 do
+live_loop :low_boom, delay: 8 do
   sample :bd_boom, rate: 0.75, amp: 0.2
   sleep [7,1,8].ring.tick
 end
