@@ -11,7 +11,7 @@ live_loop :safari, delay: 32 do
   with_fx :reverb, mix: 0.4, room: 0.6 do
     2.times do
       if one_in(2) then sample :loop_safari, amp: 0.9, finish: 0.5, rate: 0.5, beat_stretch: 16 end
-      if one_in(2) then sample :loop_safari, amp: 0.4, rate: 1, beat_stretch: 16 end
+      if one_in(3) then sample :loop_safari, amp: 0.325, rate: 1, beat_stretch: 16 end
       ##| sample :loop_compus, start: 0, rate: 1, beat_stretch: 16, amp: 0.7, cutoff: 110
       
       sleep 16
@@ -58,7 +58,7 @@ live_loop :eastern_twang do |idx|
     if one_in(3) then sleep 8 end
     idx+=1
   end
-  stop
+  ##| stop
 end
 
 
