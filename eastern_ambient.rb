@@ -1,11 +1,16 @@
 ## Eastern pluck & 'safari' percussion
 ## Coded by Nanomancer
-use_bpm 120
-set_volume! 5
 
-##| puts "SYNC"
-##| sample :elec_blip, amp: 0.5
-##| sleep 8
+set_volume! 0.55
+# set_mixer_control! amp: 0.1, amp_slide: 0.1
+set_mixer_control! amp: 0.1, amp_slide: 0.1
+sleep 1
+set_mixer_control! amp: 5, amp_slide: 12
+use_bpm 120
+
+puts "SYNC"
+sample :elec_blip, amp: 0.5
+sleep 8
 
 live_loop :safari, delay: 32 do
   with_fx :reverb, mix: 0.4, room: 0.6 do
@@ -36,6 +41,7 @@ live_loop :eastern_twang do |idx|
   use_synth :pluck
   with_random_seed seeds[idx] do
     puts "SEED: #{current_random_seed} loop no.: #{idx}"
+    if idx == 22 then stop end
     ##| autoseeder << current_random_seed
     notes = scale(:a3, :harmonic_minor, num_octaves: dice(2)).pick(4)
     multi = [0.5,1,1.5,2].choose
@@ -56,7 +62,6 @@ live_loop :eastern_twang do |idx|
     if one_in(3) then sleep 8 end
     idx+=1
   end
-  ##| stop
 end
 
 
