@@ -2,9 +2,9 @@
 ## Random Seed Version: 746742
 ## Coded by Nanomancer
 
-#######################
+######################
 
-max_t = 8 # Adjust the run time of the piece
+max_t = 40 # Adjust the run time of the piece
 
 load_samples [:ambi_drone, :ambi_haunted_hum, :ambi_lunar_land]
 $global_clock = 0
@@ -12,6 +12,7 @@ use_bpm 60
 set_volume! 5
 set_sched_ahead_time! 2
 use_cue_logging false
+#use_synth_logging false
 # SEED = 471646
 # SEED = 32625
 # SEED = 489370
