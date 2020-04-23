@@ -1,43 +1,45 @@
 # Sonic Pi Euclidean Drum Machine
 use_bpm 120
-set_volume! 5
+set_volume! 3
 editQuantisation = 2 # bars to quantise code edits to
 
 """ Hat Settings """
 hatRate = 2 # 1 = every 1/16, 2 = every 1/8 etc...
-numberOfOpenHats = 7
-hatPatternLength = 11
-hatOffset = 1
+numberOfOpenHats = #3  #2  #2  #3  #2 #3
+hatPatternLength = #11 #11 #10 #10 #5 #8
+hatOffset = 2
 ##| hatRotate = hatOffset - 1
-hatRotate = 1
+hatRotate = 2
 offbeat = false
 ##| offbeat = true
 muteHat = false
 ##| muteHat = true
 
 """ Kick & Snare Settings """
-kickSnarePatternLength = 16
-numberOfKicks = 4
+numberOfKicks = 2
+kickPatternLength = 8
+kickRotate = 3
 muteKick = false
 ##| muteKick = true
 
 numberOfSnares = 2
-snareRotate = 0
-snareOffset = 4
+snarePatternLength = 16
+snareRotate = 2
+snareOffset = 3
 muteSnare = false
-muteSnare = true
+##| muteSnare = true
 
 """ Master Clock """
 rate = 1 # speed, increase slows
 clockReset = 2 # bars to reset clocks at
 
 ##| dynamicsArray = [0.9, 0.45, 0.66, 0.5, 0.85, 0.4, 0.7, 0.4].ring
-dynamicsArray = [1, 0.6, 0.85, 0.55, 0.95, 0.65, 0.9, 0.5].ring
+dynamicsArray = [1, 0.7, 0.85, 0.65, 0.95, 0.75, 0.9, 0.65].ring
 
 ###### Rhythm patterns ######
 hatPattern = spread(numberOfOpenHats, hatPatternLength, rotate: hatRotate)
-kickPattern = spread(numberOfKicks, kickSnarePatternLength)
-snarePattern = spread(numberOfSnares, kickSnarePatternLength, rotate: snareRotate)
+kickPattern = spread(numberOfKicks, kickPatternLength, rotate: kickRotate)
+snarePattern = spread(numberOfSnares, snarePatternLength, rotate: snareRotate)
 ### Randomisation settings - dynamics & hat envs ###
 randAmt = 0.05
 randHigh = 1 + randAmt
@@ -55,6 +57,7 @@ live_loop :eucliDrum do
       tick(:hat)
       puts "hat trig in master reset, look:hat= #{look(:hat)}"
       tick_reset(:snare)
+      tick(:snare)
       tick_reset(:kick)
       puts "resetting all ticks"
       ##| sample :glitch_perc4, rate: 1.75, amp: 0.4 * dynamicsArray.tick(:hit) * rrand(randLow, randHigh)
@@ -66,20 +69,22 @@ live_loop :eucliDrum do
       if kickPattern.look(offset: -1)
         if (tick(:kick) % (numberOfKicks * 2) == 0 && look(:kick) != 0 )||
             (look(:kick) >= numberOfKicks && numberOfKicks % 2 != 0 ) ||
-            (look(:kick) >= numberOfKicks && kickSnarePatternLength % 2 != 0 )
+            (look(:kick) >= numberOfKicks && kickPatternLength % 2 != 0 )
           tick_reset(:kick)
           puts "resetting kick tick"
           tick(:kick)
         end
-        sample :bd_fat,
-          cutoff: 130 * rrand(0.95, 1.00) * ( (0.6 * dynamicsArray.look(:kick)) + 0.4 ),
-          rate: 1 * rrand(0.995, 1.005) * dynamicsArray.look(:kick),
-          amp: 0.55 * dynamicsArray.look(:kick) * rrand(0.96, 1.02)
-        sample :bd_sone,
-          cutoff: 130 * rrand(0.95, 1.00) * ( (0.6 * dynamicsArray.look(:kick)) + 0.4 ),
-          rate: 1 * rrand(0.995, 1.005) * (1 + (0.01 * dynamicsArray.look(:kick))),
-          amp: 0.35 * dynamicsArray.look(:kick) * rrand(0.97, 1.03)
-        puts "Kick, look: #{look(:kick)}"
+        aDynamic = dynamicsArray.look(:kick)
+        playKick(aDynamic)
+        ##| sample :bd_fat,
+        ##|   cutoff: 130 * rrand(0.95, 1.00) * ( (0.6 * dynamicsArray.look(:kick)) + 0.4 ),
+        ##|   rate: 1 * rrand(0.995, 1.005) * dynamicsArray.look(:kick),
+        ##|   amp: 0.55 * dynamicsArray.look(:kick) * rrand(0.96, 1.02)
+        ##| sample :bd_sone,
+        ##|   cutoff: 130 * rrand(0.95, 1.00) * ( (0.6 * dynamicsArray.look(:kick)) + 0.4 ),
+        ##|   rate: 1 * rrand(0.995, 1.005) * (1 + (0.01 * dynamicsArray.look(:kick))),
+        ##|   amp: 0.35 * dynamicsArray.look(:kick) * rrand(0.97, 1.03)
+        ##| puts "Kick, look: #{look(:kick)}"
       end
     end
     
@@ -118,7 +123,7 @@ live_loop :eucliDrum do
             attack: 0.0025 * rrand(0.9, 1.1),
             finish: hatRate * 0.085 * rrand(randLow, randHigh),
             release: hatRate * 0.25 * rrand(randLow, randHigh),
-            amp: 0.25 * dynamicsArray.look(:hat) * rrand(0.9, 1)
+            amp: 0.4 * dynamicsArray.look(:hat) * rrand(0.9, 1)
         else
           sample :drum_cymbal_closed,
             cutoff: 130 * rrand(0.995, 1.00) * ( (0.2 * dynamicsArray.look(:hat)) + 0.8 ),
@@ -127,7 +132,7 @@ live_loop :eucliDrum do
             attack: 0.005 * rrand(randLow, randHigh),
             finish: rrand(0.75, 1),
             release: rrand(0.01, 0.05),
-            amp: 0.6 * dynamicsArray.look(:hat) * rrand(0.8, 1.2)
+            amp: 0.45 * dynamicsArray.look(:hat) * rrand(0.8, 1.2)
         end
       end
     end
