@@ -1,18 +1,21 @@
 define :calculateYAxis do |m, x, c|
-  "" " Linear, Where m is gradient and c is y-intercept.
-Where C is minimum value of the parameter to reduce -
-You need to calculate gradient!
-m = ( y2 - y1 ) / ( x2 - x1 )
-or,
-m = ( y - c ) / x
-x is a value from an array intended
-to be used for amp / velocity.
+  "" "
+##| Linear, Where m is gradient and c is y-intercept.
+##| Where C is minimum value of the parameter to reduce -
+##| You need to calculate gradient!
+##| m = ( y2 - y1 ) / ( x2 - x1 )
+##| or,
+##| m = ( y - c ) / x
+##| x is a value from an array intended
+##| to be used for amp / velocity.
+##
 " ""
   y = (m * x) + c
   return y
 end
 
 define :calculateReduction do |valuesMap, aDynamic|
+  assert aDynamic <= 1 && >= 0, "values for dynamic control should be between 0 an 1 inclusive, got: aDynamic = #{aDynamic}"
   randLow = 1 - valuesMap[:randAmount]
   randHigh = 1 + valuesMap[:randAmount]
   modifier = calculateYAxis(valuesMap[:gradient], aDynamic, valuesMap[:y_int])
