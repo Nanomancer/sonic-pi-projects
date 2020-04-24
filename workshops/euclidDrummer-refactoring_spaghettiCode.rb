@@ -1,6 +1,6 @@
 # Sonic Pi Euclidean Drum Machine
-use_bpm 60
-set_volume! 5
+use_bpm 105
+set_volume! 3
 editQuantisation = 1 # bars to quantise code edits to
 
 "" " Hat Settings " ""
@@ -16,25 +16,25 @@ muteHat = false
 ##| muteHat = true
 
 "" " Kick & Snare Settings " ""
-numberOfKicks = 2
-kickPatternLength = 8
+numberOfKicks = 3
+kickPatternLength = 10
 kickRotate = 3
 muteKick = false
 ##| muteKick = true
 
-numberOfSnares = 2
+numberOfSnares = 5
 snarePatternLength = 16
 snareRotate = 2
 snareOffset = 3
 muteSnare = false
-muteSnare = true
+##| muteSnare = true
 
 "" " Master Clock " ""
 rate = 1 # speed, increase slows
-clockReset = 1 # bars to reset clocks at
+patternLength = 2 # bars to reset clocks at
 
-##| dynamicsArray = [0.9, 0.45, 0.66, 0.5, 0.85, 0.4, 0.7, 0.4].ring
-dynamicsArray = [1, 0.7, 0.85, 0.65, 0.95, 0.75, 0.9, 0.65].ring
+dynamicsArray = [0.9, 0.45, 0.66, 0.5, 0.85, 0.4, 0.7, 0.4].ring
+##| dynamicsArray = [1, 0.7, 0.85, 0.65, 0.95, 0.75, 0.9, 0.65].ring
 
 ###### Rhythm patterns ######
 ###
@@ -75,14 +75,17 @@ live_loop :avalanche do
     # should be a helper function
     # Enable an overhead (in hat module) on reset if fill = true
     ###
-    if look % (clockReset * 16) == 0 && look != 1
+    if look % (patternLength * 16) == 0 && look != 1
       puts "resetting all ticks"
       tick_reset_all
       tick_set(1)
       hatCount = tick(:hat)
       snareCount = tick(:snare)
       puts "hatCount: #{hatCount}, snareCount: #{snareCount}, masterClock: #{look}"
-      sample :glitch_perc4, rate: 2, amp: 0.8
+      ##| sample :glitch_perc4, rate: 2, amp: 0.8
+      playSplash(0.6)
+
+      
     end
     
     masterClock = tick
@@ -101,6 +104,7 @@ live_loop :avalanche do
         end
         kickDynamic = dynamicsArray[kickCount]
         playKick(kickDynamic)
+        puts "Kick"
       end
     end
     
@@ -108,17 +112,17 @@ live_loop :avalanche do
     if !muteSnare
       snareCount = tick(:snare)
       if snarePattern[ snareCount + snareOffset ]
-        ##| puts "snare"
+        puts "snare"
         with_fx :distortion, amp: 0.2,
         distort: 0.75 * rrand(randLow, randHigh), mix: 0.8 * rrand(randLow, randHigh) do
           ##| snareDynamic = dynamicsArray[snareCount]
           ##| playSnare(snareDynamic)
           
-          ##| sample :drum_snare_hard,
-          ##|   cutoff: 130 * rrand(0.92, 1.00) * ((0.2 * dynamicsArray.look(offset: -1)) + 0.8),
-          ##|   rate: 1 * rrand(0.991, 1.009) * ((0.08 * dynamicsArray.look(offset: -1)) + 0.92),
-          ##|   attack: 0.0025 * rrand(0.9, 1.1),
-          ##|   amp: 0.25 * dynamicsArray.look(offset: -1) * rrand(0.9, 1.1)
+          sample :drum_snare_hard,
+            cutoff: 130 * rrand(0.92, 1.00) * ((0.2 * dynamicsArray.look(offset: -1)) + 0.8),
+            rate: 1 * rrand(0.991, 1.009) * ((0.08 * dynamicsArray.look(offset: -1)) + 0.92),
+            attack: 0.0025 * rrand(0.9, 1.1),
+            amp: 0.25 * dynamicsArray.look(offset: -1) * rrand(0.9, 1.1)
         end
       end
     end
@@ -135,7 +139,7 @@ live_loop :avalanche do
       
       if (masterClock + lookOffset) % hatRate == 0
         hatCount = tick(:hat)
-        puts "hatCount: #{hatCount}"
+        ##| puts "hatCount: #{hatCount}"
         if hatPattern[ hatCount + hatOffset ]
           puts "Open Hat"
           sample :drum_cymbal_open,

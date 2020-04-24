@@ -30,19 +30,19 @@ define :cutoffCompensation do | cutoffMap = cutoffMap |
   return randomCompensation(cutoffMap[:maxValue], cutoffMap[:randAmount])
 end
 
-##| define :playSplash do | anAmplitude |
-##|   if one_in(3)
-##|     sample :drum_splash_hard,
-##|       rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
-##|       amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
-##|       cutoff: 131 * rrand(0.8, 1)
-##|   else
-##|     sample :drum_splash_soft,
-##|       rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
-##|       amp: rrand(0.7, 1.0) * anAmplitude,
-##|       cutoff: 131 * rrand(0.8, 1)
-##|   end
-##| end
+define :playSplash do | anAmplitude |
+if one_in(3)
+sample :drum_splash_hard,
+rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
+cutoff: 131 * rrand(0.8, 1)
+else
+sample :drum_splash_soft,
+rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+amp: rrand(0.7, 1.0) * anAmplitude,
+cutoff: 131 * rrand(0.8, 1)
+end
+end
 
 
 define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = :bd_fat, sample_2 = :bd_sone|
