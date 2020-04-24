@@ -15,16 +15,39 @@ define :calculateYAxis do |m, x, c|
 end
 
 define :calculateReduction do |valuesMap, aDynamic|
-  assert aDynamic <= 1 && >= 0, "values for dynamic control should be between 0 an 1 inclusive, got: aDynamic = #{aDynamic}"
+  assert aDynamic <= 1 && aDynamic >= 0, "values for dynamic control should be between 0 an 1 inclusive, got: aDynamic = #{aDynamic}"
   randLow = 1 - valuesMap[:randAmount]
   randHigh = 1 + valuesMap[:randAmount]
   modifier = calculateYAxis(valuesMap[:gradient], aDynamic, valuesMap[:y_int])
   return valuesMap[:maxValue] * rrand(randLow, randHigh) * modifier
 end
 
+define :randomCompensation do | maxValue, randomAmount |
+  return maxValue - ( maxValue * ( 1 + randomAmount ) - maxValue )
+end
+
+define :cutoffCompensation do | cutoffMap = cutoffMap |
+  return randomCompensation(cutoffMap[:maxValue], cutoffMap[:randAmount])
+end
+
+##| define :playSplash do | anAmplitude |
+##|   if one_in(3)
+##|     sample :drum_splash_hard,
+##|       rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+##|       amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
+##|       cutoff: 131 * rrand(0.8, 1)
+##|   else
+##|     sample :drum_splash_soft,
+##|       rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+##|       amp: rrand(0.7, 1.0) * anAmplitude,
+##|       cutoff: 131 * rrand(0.8, 1)
+##|   end
+##| end
+
+
 define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = :bd_fat, sample_2 = :bd_sone|
   cutoffMap = {
-    maxValue: 131 - ((131 * 1.01) - 131),
+    maxValue: 131,
     gradient: 0.4,
     y_int: 0.6,
     randAmount: 0.01,
@@ -35,6 +58,8 @@ define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = 
     y_int: 0.98,
     randAmount: 0.0075,
   }
+  cutoffMap[:maxValue] = randomCompensation(cutoffMap[:maxValue], cutoffMap[:randAmount])
+  
   sample sample_1,
     cutoff: calculateReduction(cutoffMap, aDynamic),
     rate: calculateReduction(pitchMap, aDynamic),
