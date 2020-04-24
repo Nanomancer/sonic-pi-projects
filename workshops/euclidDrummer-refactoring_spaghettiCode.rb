@@ -1,7 +1,7 @@
 # Sonic Pi Euclidean Drum Machine
-use_bpm 120
-set_volume! 4
-editQuantisation = 2 # bars to quantise code edits to
+use_bpm 60
+set_volume! 5
+editQuantisation = 1 # bars to quantise code edits to
 
 "" " Hat Settings " ""
 hatRate = 2 # 1 = every 1/16, 2 = every 1/8 etc...
@@ -27,11 +27,11 @@ snarePatternLength = 16
 snareRotate = 2
 snareOffset = 3
 muteSnare = false
-##| muteSnare = true
+muteSnare = true
 
 "" " Master Clock " ""
 rate = 1 # speed, increase slows
-clockReset = 2 # bars to reset clocks at
+clockReset = 1 # bars to reset clocks at
 
 ##| dynamicsArray = [0.9, 0.45, 0.66, 0.5, 0.85, 0.4, 0.7, 0.4].ring
 dynamicsArray = [1, 0.7, 0.85, 0.65, 0.95, 0.75, 0.9, 0.65].ring
@@ -48,64 +48,70 @@ timingAmt = 0.000025
 
 live_loop :eucliDrum do
   (editQuantisation * 16).times do
-
+    
     ### RESET / CRASH ###
     if look % (clockReset * 16) == 0 && look != 1
-      tick_set(1)
-      tick_reset(:hat)
-      tick(:hat)
-      puts "hat trig in master reset, look:hat= #{look(:hat)}"
-      tick_reset(:snare)
-      tick(:snare)
-      tick_reset(:kick)
       puts "resetting all ticks"
-      ##| sample :glitch_perc4, rate: 1.75, amp: 0.4 * dynamicsArray.tick(:hit) * rrand(randLow, randHigh)
+      tick_reset_all
+      tick_set(1)
+      hatCount = tick(:hat)
+      snareCount = tick(:snare)
+      puts "hatCount: #{hatCount}, snareCount: #{snareCount}, masterClock: #{look}"
+      sample :glitch_perc4, rate: 2, amp: 0.8
     end
-    tick
-
+    
+    masterClock = tick
+    
+    
     ### KICK ###
     if !muteKick
-      if kickPattern.look(offset: -1)
-        if (tick(:kick) % (numberOfKicks * 2) == 0 && look(:kick) != 0) ||
-           (look(:kick) >= numberOfKicks && numberOfKicks % 2 != 0) ||
-           (look(:kick) >= numberOfKicks && kickPatternLength % 2 != 0)
+      if kickPattern[ masterClock - 1 ]
+        kickCount = tick(:kick)
+        if (kickCount % (numberOfKicks * 2) == 0 && kickCount != 0) ||
+            (kickCount >= numberOfKicks && numberOfKicks % 2 != 0) ||
+            (kickCount >= numberOfKicks && kickPatternLength % 2 != 0)
           tick_reset(:kick)
-          puts "resetting kick tick"
-          tick(:kick)
+          puts "resetting kick count"
+          kickCount = tick(:kick)
         end
-        aDynamic = dynamicsArray.look(:kick)
-        playKick(aDynamic)
+        kickDynamic = dynamicsArray[kickCount]
+        playKick(kickDynamic)
       end
     end
-
+    
     ### SNARE ###
     if !muteSnare
-      if snarePattern[tick(:snare) + snareOffset]
+      snareCount = tick(:snare)
+      if snarePattern[ snareCount + snareOffset ]
         ##| puts "snare"
         with_fx :distortion, amp: 0.2,
-                             distort: 0.75 * rrand(randLow, randHigh), mix: 0.8 * rrand(randLow, randHigh) do
-          sample :drum_snare_hard,
-            cutoff: 130 * rrand(0.92, 1.00) * ((0.2 * dynamicsArray.look(offset: -1)) + 0.8),
-            rate: 1 * rrand(0.991, 1.009) * ((0.08 * dynamicsArray.look(offset: -1)) + 0.92),
-            attack: 0.0025 * rrand(0.9, 1.1),
-            amp: 0.25 * dynamicsArray.look(offset: -1) * rrand(0.9, 1.1)
+        distort: 0.75 * rrand(randLow, randHigh), mix: 0.8 * rrand(randLow, randHigh) do
+          ##| snareDynamic = dynamicsArray[snareCount]
+          ##| playSnare(snareDynamic)
+          
+          ##| sample :drum_snare_hard,
+          ##|   cutoff: 130 * rrand(0.92, 1.00) * ((0.2 * dynamicsArray.look(offset: -1)) + 0.8),
+          ##|   rate: 1 * rrand(0.991, 1.009) * ((0.08 * dynamicsArray.look(offset: -1)) + 0.92),
+          ##|   attack: 0.0025 * rrand(0.9, 1.1),
+          ##|   amp: 0.25 * dynamicsArray.look(offset: -1) * rrand(0.9, 1.1)
         end
       end
     end
-
+    
     ### HAT ###
     if !muteHat
+      
       if offbeat
         lookOffset = 1
         hatRate = 4
       else
         lookOffset = -1
       end
-      if look(offset: lookOffset) % hatRate == 0
-        puts "hat trig, look:hat= #{look(:hat)}"
-        tick(:hat)
-        puts "hat ticked, new look = #{look(:hat)}"
-        if hatPattern[look(:hat) + hatOffset]
+      
+      if (masterClock + lookOffset) % hatRate == 0
+        hatCount = tick(:hat)
+        puts "hatCount: #{hatCount}"
+        if hatPattern[ hatCount + hatOffset ]
           puts "Open Hat"
           sample :drum_cymbal_open,
             cutoff: 130 * rrand(0.995, 1.00) * ((0.2 * dynamicsArray.look(:hat)) + 0.8),
