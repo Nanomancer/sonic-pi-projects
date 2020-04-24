@@ -21,7 +21,7 @@ end
 
 define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = :bd_fat, sample_2 = :bd_sone|
   cutoffMap = {
-    maxValue: 130 - 0.01,
+    maxValue: 131 - ((131 * 1.01) - 131),
     gradient: 0.4,
     y_int: 0.6,
     randAmount: 0.01,
@@ -44,7 +44,7 @@ end
 
 ##| define :playSnare do | anAmplitude, aDynamic, sample_1 = :drum_snare_hard |
 ##|   cutoffMap = {
-##|     maxValue: 130 - 0.08,
+##| maxValue: 131 - ((131 * 1.08) - 131),
 ##|     gradient: 0.2,
 ##|     y_int: 0.8,
 ##|     randAmount: 0.08
