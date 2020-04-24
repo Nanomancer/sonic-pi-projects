@@ -37,19 +37,44 @@ clockReset = 1 # bars to reset clocks at
 dynamicsArray = [1, 0.7, 0.85, 0.65, 0.95, 0.75, 0.9, 0.65].ring
 
 ###### Rhythm patterns ######
+###
+# make these a map returned by function, whose input is map of settings
+# eg,
+# ##| rhythmicPatterns = generateSpreadPatterns(mySettingMap)
+###
 hatPattern = spread(numberOfOpenHats, hatPatternLength, rotate: hatRotate)
 kickPattern = spread(numberOfKicks, kickPatternLength, rotate: kickRotate)
 snarePattern = spread(numberOfSnares, snarePatternLength, rotate: snareRotate)
+
 ### Randomisation settings - dynamics & hat envs ###
 randAmt = 0.05
 randHigh = 1 + randAmt
 randLow = 1 - randAmt
 timingAmt = 0.000025
 
-live_loop :eucliDrum do
+live_loop :avalanche do
+  ### TODO
+  
+  # live_loop :avalanche should be a function, individual drums in own threads
+  # threads should have own timing randomisation
+  # helper trigger functions for each voice
+  # aim for one function - avalanche(mySettingsMap) taking one map as input
+  # presets can be maps returned from functions. position below editable map at top of buffer to override
+  # eg,
+  # mySettingsMap = myTechnoFunction(influenceWithVariables?, chance?)
+  # mySettingsMap = myJazzFunction(myVar, anotherVar)
+  # define a default map and function, which myJazzFunction() etc. calls as start point
+  # run avalanche() in live loop with any fx / automation
+  # do some basic fills
+  ###
+  
   (editQuantisation * 16).times do
     
     ### RESET / CRASH ###
+    ###
+    # should be a helper function
+    # Enable an overhead (in hat module) on reset if fill = true
+    ###
     if look % (clockReset * 16) == 0 && look != 1
       puts "resetting all ticks"
       tick_reset_all
