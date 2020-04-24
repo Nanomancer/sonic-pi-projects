@@ -21,7 +21,7 @@ define :calculateReduction do | valuesMap, aDynamic |
 end
 
 
-define :playKick do | anAmplitude, aDynamic, sample_1 = :bd_fat, sample_2 = :bd_sone |
+define :playKick do | aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = :bd_fat, sample_2 = :bd_sone |
   cutoffMap = {
     maxValue: 130 - 0.01,
     gradient: 0.4,
@@ -37,11 +37,11 @@ define :playKick do | anAmplitude, aDynamic, sample_1 = :bd_fat, sample_2 = :bd_
   sample sample_1,
     cutoff: calculateReduction(cutoffMap, aDynamic),
     rate: calculateReduction(pitchMap, aDynamic),
-    amp: 1.0 * anAmplitude * aDynamic * rrand(0.96, 1.02)
+    amp: kick_1_vol * aDynamic * rrand(0.96, 1.02)
   sample sample_2,
     cutoff: calculateReduction(cutoffMap, aDynamic),
     rate: calculateReduction(pitchMap, aDynamic),
-    amp: 0.65 * anAmplitude * aDynamic * rrand(0.97, 1.03)
+    amp: kick_2_vol * aDynamic * rrand(0.97, 1.03)
 end
 
 ##| define :playSnare do | anAmplitude, aDynamic, sample_1 = :drum_snare_hard |
