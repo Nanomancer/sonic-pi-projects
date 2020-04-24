@@ -1,12 +1,12 @@
 # Sonic Pi Euclidean Drum Machine
 use_bpm 120
-set_volume! 3
+set_volume! 4
 editQuantisation = 2 # bars to quantise code edits to
 
 """ Hat Settings """
 hatRate = 2 # 1 = every 1/16, 2 = every 1/8 etc...
-numberOfOpenHats = #3  #2  #2  #3  #2 #3
-hatPatternLength = #11 #11 #10 #10 #5 #8
+numberOfOpenHats = 1  #3  #2  #2  #3  #2 #3
+hatPatternLength = 8 #11 #11 #10 #10 #5 #8
 hatOffset = 2
 ##| hatRotate = hatOffset - 1
 hatRotate = 2
@@ -67,7 +67,7 @@ live_loop :eucliDrum do
     ### KICK ###
     if !muteKick
       if kickPattern.look(offset: -1)
-        if (tick(:kick) % (numberOfKicks * 2) == 0 && look(:kick) != 0 )||
+        if (tick(:kick) % (numberOfKicks * 2) == 0 && look(:kick) != 0 ) ||
             (look(:kick) >= numberOfKicks && numberOfKicks % 2 != 0 ) ||
             (look(:kick) >= numberOfKicks && kickPatternLength % 2 != 0 )
           tick_reset(:kick)
@@ -76,15 +76,6 @@ live_loop :eucliDrum do
         end
         aDynamic = dynamicsArray.look(:kick)
         playKick(aDynamic)
-        ##| sample :bd_fat,
-        ##|   cutoff: 130 * rrand(0.95, 1.00) * ( (0.6 * dynamicsArray.look(:kick)) + 0.4 ),
-        ##|   rate: 1 * rrand(0.995, 1.005) * dynamicsArray.look(:kick),
-        ##|   amp: 0.55 * dynamicsArray.look(:kick) * rrand(0.96, 1.02)
-        ##| sample :bd_sone,
-        ##|   cutoff: 130 * rrand(0.95, 1.00) * ( (0.6 * dynamicsArray.look(:kick)) + 0.4 ),
-        ##|   rate: 1 * rrand(0.995, 1.005) * (1 + (0.01 * dynamicsArray.look(:kick))),
-        ##|   amp: 0.35 * dynamicsArray.look(:kick) * rrand(0.97, 1.03)
-        ##| puts "Kick, look: #{look(:kick)}"
       end
     end
     
