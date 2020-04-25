@@ -31,17 +31,17 @@ define :cutoffCompensation do | cutoffMap = cutoffMap |
 end
 
 define :playSplash do | anAmplitude |
-if one_in(3)
-sample :drum_splash_hard,
-rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
-amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
-cutoff: 131 * rrand(0.8, 1)
-else
-sample :drum_splash_soft,
-rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
-amp: rrand(0.7, 1.0) * anAmplitude,
-cutoff: 131 * rrand(0.8, 1)
-end
+  if one_in(3)
+    sample :drum_splash_hard,
+      rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+      amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
+      cutoff: 131 * rrand(0.8, 1)
+  else
+    sample :drum_splash_soft,
+      rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+      amp: rrand(0.7, 1.0) * anAmplitude,
+      cutoff: 131 * rrand(0.8, 1)
+  end
 end
 
 

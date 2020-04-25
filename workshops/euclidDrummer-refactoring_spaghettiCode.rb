@@ -1,14 +1,23 @@
 # Sonic Pi Euclidean Drum Machine
 use_bpm 105
 set_volume! 3
-editQuantisation = 1 # bars to quantise code edits to
+
+set :editQuantisation, 1 # bars to quantise code edits to
 
 "" " Hat Settings " ""
-hatRate = 2 # 1 = every 1/16, 2 = every 1/8 etc...
-numberOfOpenHats = 1  #3  #2  #2  #3  #2 #3
-hatPatternLength = 8 #11 #11 #10 #10 #5 #8
+set :hatRate, 2 # 1 = every 1/16, 2 = every 1/8 etc...
+set :numberOfOpenHats,  #3  #2  #2  #3  #2 #3
+euclideanPairs = [ 
+    [ [ 1, 5, ], [ 2, 5 ] ],
+    [ 1, 6, ], [ 2, 5 ],
+    [ 1, 8 ], [ 2, 8 ], [ 3, 8 ],
+    [ 1, 10 ], [ 2, 10 ], [ 3, 10 ], [ 4, 10 ],
+    [ 1, 11 ], [ 2, 11 ], [ 3, 11 ], [ 5, 11 ],
+    [ 1, 12 ], [ 2, 12 ], [ 7, 11 ],
+    [ 1, 12 ], [ 2, 12 ], [ 7, 11 ], [ 5, 11 ],
+]
+set :hatPattern, euclideanPairs[0][1]
 hatOffset = 2
-##| hatRotate = hatOffset - 1
 hatRotate = 2
 offbeat = false
 ##| offbeat = true
@@ -84,7 +93,7 @@ live_loop :avalanche do
       puts "hatCount: #{hatCount}, snareCount: #{snareCount}, masterClock: #{look}"
       ##| sample :glitch_perc4, rate: 2, amp: 0.8
       playSplash(0.6)
-
+      
       
     end
     
@@ -130,13 +139,13 @@ live_loop :avalanche do
     ### HAT ###
     if !muteHat
       
-      if offbeat
+      if get[:offbeat]
         lookOffset = 1
         hatRate = 4
       else
         lookOffset = -1
       end
-      
+      hatRate = get[:hatRate] 
       if (masterClock + lookOffset) % hatRate == 0
         hatCount = tick(:hat)
         ##| puts "hatCount: #{hatCount}"
