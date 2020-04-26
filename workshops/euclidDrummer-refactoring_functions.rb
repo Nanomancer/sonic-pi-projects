@@ -22,28 +22,27 @@ define :calculateReduction do |valuesMap, aDynamic|
   return valuesMap[:maxValue] * rrand(randLow, randHigh) * modifier
 end
 
-define :randomCompensation do | maxValue, randomAmount |
-  return maxValue - ( maxValue * ( 1 + randomAmount ) - maxValue )
+define :randomCompensation do |maxValue, randomAmount|
+  return maxValue - (maxValue * (1 + randomAmount) - maxValue)
 end
 
-define :cutoffCompensation do | cutoffMap = cutoffMap |
+define :cutoffCompensation do |cutoffMap = cutoffMap|
   return randomCompensation(cutoffMap[:maxValue], cutoffMap[:randAmount])
 end
 
-define :playSplash do | anAmplitude |
+define :playSplash do |anAmplitude|
   if one_in(3)
     sample :drum_splash_hard,
-      rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+      rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85].choose,
       amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
       cutoff: 131 * rrand(0.8, 1)
   else
     sample :drum_splash_soft,
-      rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85 ].choose,
+      rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85].choose,
       amp: rrand(0.7, 1.0) * anAmplitude,
       cutoff: 131 * rrand(0.8, 1)
   end
 end
-
 
 define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = :bd_fat, sample_2 = :bd_sone|
   cutoffMap = {
@@ -59,7 +58,7 @@ define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = 
     randAmount: 0.0075,
   }
   cutoffMap[:maxValue] = randomCompensation(cutoffMap[:maxValue], cutoffMap[:randAmount])
-  
+
   sample sample_1,
     cutoff: calculateReduction(cutoffMap, aDynamic),
     rate: calculateReduction(pitchMap, aDynamic),
@@ -119,8 +118,17 @@ end
 ##|     attack: 0.0025 * rrand(0.9, 1.1)
 ##| end
 
-##| live_loop :test do
-##|   aDynamic = [1, 0.6, 0.85, 0.55, 0.95, 0.65, 0.9, 0.7].ring.tick
-##|   playKick(aDynamic)
-##|   sleep 0.5
-##| end
+define :populate_timestate_with_patterns do
+  set :pattern_3_8, spread(3, 8) #1
+  set :pattern_2_7, spread(2, 7) #2
+  set :pattern_3_10, spread(3, 10) #3
+  set :pattern_8_12, spread(8, 12)
+  set :pattern_9_12, spread(9, 12)
+  set :pattern_10_12, spread(10, 12)
+  set :pattern_11_12, spread(11, 12)
+  set :pattern_9_16, spread(9, 16)
+  set :pattern_11_16, spread(11, 16)
+  set :pattern_13_16, spread(13, 16)
+  set :pattern_15_16, spread(15, 16)
+end
+populate_timestate_with_patterns()
