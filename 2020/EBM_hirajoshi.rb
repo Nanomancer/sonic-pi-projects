@@ -1,12 +1,14 @@
+# EBM in c minor - hirajoshi
 # Sequencer / arp based on multiple Euclidean distributions
 # Coded by Nanomancer
 
+set_volume! 3
 use_bpm 120
-
+tset
 live_loop :EBM, sync: :clock do
   pattern_1, pattern_2, pattern_3 = spread( 3, 8 ), spread( 2, 7 ), spread( 3, 10 )
   use_synth :prophet
-  ##| 2.times do
+  
   (get[:editQuantisation]).times do
     tick_reset
     #################################
@@ -31,7 +33,8 @@ live_loop :EBM, sync: :clock do
       if pattern_1[clock + 2] then currentDegree = 7 end
       if pattern_2[clock + 2] then currentDegree -= 1 end
       if pattern_3[clock + 4] then currentDegree = 5 end
-      ##| if pattern_1[clock + 4] then currentDegree -= 2 end
+      if pattern_1[clock + 4] then currentDegree -= 2 end
+      ##| if factor?(clock, 16) && pattern_1[clock + 4] then currentDegree -= 2 end
       
       if noteTriggerPattern[clock] then play notes[currentDegree],
           amp: dynamicPattern[clock],
@@ -47,7 +50,7 @@ end
 live_loop :clock, cue: id do | idx |
   ##| puts cue("/live_loop/clock")
   puts idx
-  4.times do
+  (get[:editQuantisation]).times do
     sleep 1
   end
   idx + 1

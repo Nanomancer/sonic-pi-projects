@@ -27,6 +27,6 @@ live_loop :pluck do
     ##| if one_in 10 then tick(:col) end
     play notes[ cellz[ down ][ across ] ], amp: 0.5 * rand_1(0.1)
     
-    sleep 2 * timingVariance * rhythm.across
+    sleep 2 * timingVariance * rhythm[across]
   end
 end

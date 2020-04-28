@@ -1,3 +1,22 @@
+
+
+define :getNewSeed do
+  SEED = Time.now.usec # get a different run every time
+  puts "Epoch seed: #{SEED}"
+  return SEED
+end
+
+
+define :mk_rand_scale do |scale, len = 8|
+  # random scale that may contain the same note more than once
+  rand_s = []
+  len.times do
+    rand_s << scale.choose
+  end
+  return rand_s.ring
+end
+
+
 define :calculateYAxis do |m, x, c|
   "" "
 ##| Linear, Where m is gradient and c is y-intercept.
@@ -14,12 +33,17 @@ define :calculateYAxis do |m, x, c|
   return y
 end
 
+define :rand_1 do | aFloat |
+  randLow = 1 - aFloat
+  randHigh = 1 + aFloat
+  return rrand(randLow, randHigh)
+end
+
+
 define :calculateReduction do |valuesMap, aDynamic|
   assert aDynamic <= 1 && aDynamic >= 0, "values for dynamic control should be between 0 an 1 inclusive, got: aDynamic = #{aDynamic}"
-  randLow = 1 - valuesMap[:randAmount]
-  randHigh = 1 + valuesMap[:randAmount]
   modifier = calculateYAxis(valuesMap[:gradient], aDynamic, valuesMap[:y_int])
-  return valuesMap[:maxValue] * rrand(randLow, randHigh) * modifier
+  return valuesMap[:maxValue] * rand_1(valuesMap[:randAmount]) * modifier
 end
 
 define :randomCompensation do |maxValue, randomAmount|
@@ -35,14 +59,19 @@ define :playSplash do |anAmplitude|
     sample :drum_splash_hard,
       rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85].choose,
       amp: rrand(0.7, 1.0) * 0.4 * anAmplitude,
-      cutoff: 131 * rrand(0.8, 1)
+      cutoff: 131 * rand_1(0.2)
   else
     sample :drum_splash_soft,
       rate: rrand(0.9, 1.1) * [1.25, 1, 1.5, 0.85].choose,
       amp: rrand(0.7, 1.0) * anAmplitude,
-      cutoff: 131 * rrand(0.8, 1)
+      cutoff: 131 * rand_1(0.2)
   end
 end
+
+define :resetKick do
+  
+end
+
 
 define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = :bd_fat, sample_2 = :bd_sone|
   cutoffMap = {
@@ -62,32 +91,32 @@ define :playKick do |aDynamic, kick_1_vol = 0.55, kick_2_vol = 0.35, sample_1 = 
   sample sample_1,
     cutoff: calculateReduction(cutoffMap, aDynamic),
     rate: calculateReduction(pitchMap, aDynamic),
-    amp: kick_1_vol * aDynamic * rrand(0.96, 1.02)
+    amp: kick_1_vol * aDynamic * rand_1(0.3)
   sample sample_2,
     cutoff: calculateReduction(cutoffMap, aDynamic),
     rate: calculateReduction(pitchMap, aDynamic),
-    amp: kick_2_vol * aDynamic * rrand(0.97, 1.03)
+    amp: kick_2_vol * aDynamic * rand_1(0.3)
 end
 
-##| define :playSnare do | anAmplitude, aDynamic, sample_1 = :drum_snare_hard |
-##|   cutoffMap = {
-##| maxValue: 131 - ((131 * 1.08) - 131),
-##|     gradient: 0.2,
-##|     y_int: 0.8,
-##|     randAmount: 0.08
-##|   }
-##|   pitchMap = {
-##|     maxValue: 1,
-##|     gradient: 0.08,
-##|     y_int: 0.92,
-##|     randAmount: 0.009
-##|   }
-##|   sample sample_1,
-##|     cutoff: calculateReduction(cutoffMap, aDynamic),
-##|     rate: calculateReduction(pitchMap, aDynamic),
-##|     amp: anAmplitude * aDynamic * rrand(0.9, 1.1),
-##|     attack: 0.0025 * rrand(0.9, 1.1)
-##| end
+define :playSnare do | anAmplitude, aDynamic, sample_1 = :drum_snare_hard |
+  cutoffMap = {
+    maxValue: 131 - ((131 * 1.08) - 131),
+    gradient: 0.2,
+    y_int: 0.8,
+    randAmount: 0.08
+  }
+  pitchMap = {
+    maxValue: 1,
+    gradient: 0.08,
+    y_int: 0.92,
+    randAmount: 0.009
+  }
+  sample sample_1,
+    cutoff: calculateReduction(cutoffMap, aDynamic),
+    rate: calculateReduction(pitchMap, aDynamic),
+    amp: anAmplitude * aDynamic * rrand(0.9, 1.1),
+    attack: 0.0025 * rrand(0.9, 1.1)
+end
 
 ##| sample :drum_cymbal_closed,
 ##|   cutoff: 130 * rrand(0.995, 1.00) * ( (0.2 * dynamicsArray.look(:hat)) + 0.8 ),
