@@ -23,10 +23,10 @@ live_loop :pluck do
     down = look(:down)
     timingVariance = rand_1(0.085)
     if factor?( across, 11 ) then tick(:down) end
-    ##| if one_in 8 then tick end
-    ##| if one_in 12 then tick(:col) end
+    ##| if one_in 6 then tick end
+    ##| if one_in 10 then tick(:col) end
     play notes[ cellz[ down ][ across ] ], amp: 0.5 * rand_1(0.1)
     
-    sleep 2 * timingVariance * rhythm.look
+    sleep 2 * timingVariance * rhythm.across
   end
 end
