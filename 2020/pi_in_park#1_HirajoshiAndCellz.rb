@@ -1,4 +1,4 @@
-# Pi in the Park #1 - :hirajoshi and :cellz
+# Pi in the Park #1 - hirajoshi and cellz
 # Coded by Nanomancer
 set_volume! 3
 set :cellz, [
