@@ -1,4 +1,8 @@
-
+define :syncTone do
+  sample :elec_ping
+  puts "SYNC"
+  sleep 8
+end
 
 define :getNewSeed do
   SEED = Time.now.usec # get a different run every time
